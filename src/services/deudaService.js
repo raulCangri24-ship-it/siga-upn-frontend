@@ -1,21 +1,21 @@
-import axios from 'axios'
+﻿import api from './api'
 
-const BASE = 'http://localhost:8080/api/deudas'
+const BASE = '/api/deudas'
 const h = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
 })
 
 export const verificarRestriccion = (idEstudiante) =>
-  axios.get(`${BASE}/estudiante/${idEstudiante}/verificar`, h())
+  api.get(`${BASE}/estudiante/${idEstudiante}/verificar`, h())
 
 export const listarDeudas = () =>
-  axios.get(BASE, h())
+  api.get(BASE, h())
 
 export const listarDeudasEstudiante = (idEstudiante) =>
-  axios.get(`${BASE}/estudiante/${idEstudiante}`, h())
+  api.get(`${BASE}/estudiante/${idEstudiante}`, h())
 
 export const registrarDeuda = (data) =>
-  axios.post(BASE, data, h())
+  api.post(BASE, data, h())
 
 export const saldarDeuda = (idDeuda) =>
-  axios.patch(`${BASE}/${idDeuda}/saldar`, {}, h())
+  api.patch(`${BASE}/${idDeuda}/saldar`, {}, h())

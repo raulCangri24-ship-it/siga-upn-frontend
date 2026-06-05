@@ -1,8 +1,8 @@
-import axios from 'axios'
+﻿import api from './api'
 
-const BASE = 'http://localhost:8080/api/dashboard'
+const BASE = '/api/dashboard'
 const h = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
 
-export const getDashboardEstudiantil = () => axios.get(`${BASE}/estudiantil`, h())
-export const getDashboardDocente    = () => axios.get(`${BASE}/docente`, h())
-export const getDashboardRector     = () => axios.get(`${BASE}/rector`, h())
+export const getDashboardEstudiantil = () => api.get(`${BASE}/estudiantil`, h())
+export const getDashboardDocente    = () => api.get(`${BASE}/docente`, h())
+export const getDashboardRector     = () => api.get(`${BASE}/rector`, h())

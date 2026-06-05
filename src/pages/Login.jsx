@@ -1,6 +1,6 @@
 ﻿import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../services/api'
 import { motion, AnimatePresence } from 'framer-motion'
 import './Login.css'
 import logoUpn from '../assets/logo-upn.png'
@@ -18,7 +18,7 @@ function Login() {
     setCargando(true)
 
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/login', {
+      const response = await api.post('/api/auth/login', {
         correo,
         contrasena
       })

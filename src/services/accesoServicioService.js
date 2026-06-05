@@ -1,19 +1,19 @@
-import axios from 'axios'
+﻿import api from './api'
 
-const BASE = 'http://localhost:8080/api/accesos'
+const BASE = '/api/accesos'
 const h = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
 
 export const obtenerAccesosEstudiante = (idEstudiante) =>
-  axios.get(`${BASE}/estudiante/${idEstudiante}`, h())
+  api.get(`${BASE}/estudiante/${idEstudiante}`, h())
 
 export const provisionarAccesos = (data) =>
-  axios.post(`${BASE}/provisionar`, data, h())
+  api.post(`${BASE}/provisionar`, data, h())
 
 export const reintentarAccesos = () =>
-  axios.post(`${BASE}/reintentar`, {}, h())
+  api.post(`${BASE}/reintentar`, {}, h())
 
 export const suspenderAccesos = (idEstudiante, tipo) =>
-  axios.patch(`${BASE}/suspender/${idEstudiante}`, { tipo }, h())
+  api.patch(`${BASE}/suspender/${idEstudiante}`, { tipo }, h())
 
 export const rehabilitarAccesos = (idEstudiante) =>
-  axios.patch(`${BASE}/rehabilitar/${idEstudiante}`, {}, h())
+  api.patch(`${BASE}/rehabilitar/${idEstudiante}`, {}, h())
