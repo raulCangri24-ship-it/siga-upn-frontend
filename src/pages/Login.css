@@ -1,0 +1,233 @@
+﻿* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.login-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+/* ── Panel izquierdo ─────────────────────────────── */
+.login-left {
+  flex: 1.1;
+  background: #0A0F1A;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-circle-1 {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(26,63,122,0.6) 0%, transparent 70%);
+  top: -150px;
+  left: -150px;
+  pointer-events: none;
+}
+
+.bg-circle-2 {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245,173,39,0.08) 0%, transparent 70%);
+  bottom: -100px;
+  right: -100px;
+  pointer-events: none;
+}
+
+.bg-circle-3 {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(26,63,122,0.4) 0%, transparent 70%);
+  top: 50%;
+  right: 10%;
+  pointer-events: none;
+}
+
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  z-index: 1;
+}
+
+.logo-img {
+  width: 220px;
+  height: auto;
+  filter: drop-shadow(0 8px 32px rgba(0,0,0,0.5));
+}
+
+.logo-divider {
+  width: 50px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #F5AD27, transparent);
+  border-radius: 2px;
+}
+
+.logo-tagline {
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  text-align: center;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* ── Panel derecho ───────────────────────────────── */
+.login-right {
+  flex: 0.9;
+  background: #f8f9fc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-header {
+  margin-bottom: 36px;
+}
+
+.login-header h1 {
+  font-size: 30px;
+  font-weight: 700;
+  color: #0A0F1A;
+  margin-bottom: 6px;
+}
+
+.login-header p {
+  font-size: 14px;
+  color: #9e9e9e;
+  line-height: 1.5;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 12px;
+  font-size: 15px;
+  transition: all 0.25s;
+  outline: none;
+  color: #1a1a1a;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.form-group input:focus {
+  border-color: #F5AD27;
+  box-shadow: 0 0 0 4px rgba(245,173,39,0.1);
+}
+
+.form-group input::placeholder {
+  color: #bbb;
+}
+
+.error-msg {
+  background: #fff5f5;
+  border: 1.5px solid #ffcdd2;
+  color: #c62828;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-login {
+  padding: 15px;
+  background: #F5AD27;
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s;
+  margin-top: 6px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 16px rgba(245,173,39,0.3);
+}
+
+.btn-login:hover {
+  background: #D18E12;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(245,173,39,0.4);
+}
+
+.btn-login:active {
+  transform: translateY(0);
+}
+
+.btn-login:disabled {
+  background: #b0bec5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.login-footer {
+  margin-top: 28px;
+  text-align: center;
+  font-size: 12px;
+  color: #bbb;
+  letter-spacing: 0.3px;
+}
+
+.login-footer span {
+  color: #F5AD27;
+  font-weight: 700;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .login-left { display: none; }
+  .login-right { flex: 1; padding: 32px 24px; }
+}

@@ -1,0 +1,86 @@
+﻿.ma-container { display: flex; flex-direction: column; min-height: 100vh; background: #F5F5F5; }
+
+/* Navbar */
+.ma-navbar { height: 64px; background: #0A0F1A; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; }
+.ma-navbar-left { display: flex; align-items: center; gap: 12px; }
+.ma-logo-dot { width: 32px; height: 32px; background: #F5AD27; border-radius: 6px; }
+.ma-logo-text { color: #fff; font-weight: 700; font-size: 16px; }
+.ma-logo-sub { color: #666d78; font-size: 11px; }
+.ma-navbar-right { display: flex; align-items: center; gap: 16px; }
+.ma-user { color: #e0e3e8; font-size: 13px; }
+.ma-logout { padding: 8px 20px; background: #dc2626; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; }
+
+/* Body */
+.ma-body { display: flex; flex: 1; }
+
+/* Sidebar */
+.ma-sidebar { width: 240px; background: #111827; padding: 20px 12px; flex-shrink: 0; }
+.ma-menu-item { padding: 13px 20px; border-radius: 10px; color: #878fa3; font-size: 13px; cursor: pointer; margin-bottom: 4px; }
+.ma-menu-item.active { background: #F5AD27; color: #fff; font-weight: 700; border-left: 4px solid #F5AD27; }
+.ma-menu-item:hover:not(.active) { background: rgba(255,255,255,0.05); color: #e0e3e8; }
+
+/* Main */
+.ma-main { flex: 1; padding: 32px; overflow-y: auto; }
+
+/* Alert */
+.ma-alert { padding: 14px 20px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; font-weight: 500; }
+.ma-alert-ok { background: #d1fae5; border: 1px solid #6ee7b7; color: #065f46; }
+.ma-alert-error { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
+
+/* Header */
+.ma-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+.ma-title { font-size: 22px; font-weight: 700; color: #161a22; }
+.ma-subtitle { font-size: 12px; color: #666d78; margin-top: 4px; }
+
+/* Botones */
+.ma-btn-reintentar { padding: 11px 22px; background: #111827; color: #F5AD27; border: 1.5px solid #F5AD27; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; }
+.ma-btn-reintentar:hover { background: #F5AD27; }
+
+/* Cargando */
+.ma-cargando { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 60px; color: #666d78; }
+.ma-spinner { width: 36px; height: 36px; border: 3px solid #e0e3e8; border-top-color: #D18E12; border-radius: 50%; animation: ma-spin 0.8s linear infinite; }
+@keyframes ma-spin { to { transform: rotate(360deg); } }
+
+/* Empty */
+.ma-empty { text-align: center; padding: 60px; color: #6b7280; }
+.ma-empty-sub { font-size: 12px; color: #9ca3af; margin-top: 8px; }
+
+/* Servicios grid */
+.ma-servicios-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+/* Tarjeta de servicio */
+.ma-servicio-card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 2px solid #e0e3e8; display: flex; flex-direction: column; gap: 14px; transition: border-color 0.2s; }
+.ma-servicio-card.activo { border-color: #6ee7b7; }
+.ma-servicio-card.suspendido { border-color: #fca5a5; background: #fff9f9; }
+.ma-servicio-card.pendiente { border-color: #fde68a; }
+.ma-servicio-card.sin-acceso { border-color: #e0e3e8; background: #f8f9fb; }
+
+/* Icono servicio */
+.ma-servicio-icon { display: flex; align-items: center; justify-content: center; }
+.ma-icon { width: 52px; height: 52px; border-radius: 14px; }
+.ma-icon-aula { background: linear-gradient(135deg, #1A3F7A, #2E74B5); }
+.ma-icon-biblio { background: linear-gradient(135deg, #059669, #10b981); }
+.ma-icon-video { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
+
+/* Info servicio */
+.ma-servicio-nombre { font-size: 16px; font-weight: 700; color: #161a22; margin: 0 0 4px 0; }
+.ma-servicio-desc { font-size: 12px; color: #6b7280; margin: 0; line-height: 1.5; }
+
+/* Estado */
+.ma-servicio-estado { display: flex; flex-direction: column; gap: 6px; }
+.ma-fecha { font-size: 11px; color: #9ca3af; margin: 0; }
+.ma-fecha-warn { color: #dc2626; font-weight: 500; }
+
+/* Badges */
+.ma-badge { padding: 5px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-block; }
+.ma-badge-activo { background: #d1fae5; color: #065f46; }
+.ma-badge-suspendido { background: #fee2e2; color: #991b1b; }
+.ma-badge-pendiente { background: #fef3c7; color: #92400e; }
+.ma-badge-sin { background: #f3f4f6; color: #6b7280; }
+
+/* Aviso suspendido */
+.ma-aviso-suspendido { margin-top: 24px; padding: 16px 20px; background: #fee2e2; border: 1px solid #fca5a5; border-radius: 10px; font-size: 13px; color: #991b1b; line-height: 1.7; }
+
+@media (max-width: 900px) {
+  .ma-servicios-grid { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,65 @@
+﻿.pc-container { display: flex; flex-direction: column; min-height: 100vh; background: #F5F5F5; }
+
+.pc-navbar { height: 64px; background: #0A0F1A; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+.pc-navbar-left { display: flex; align-items: center; gap: 12px; }
+.pc-logo-dot { width: 32px; height: 32px; background: #F5AD27; border-radius: 6px; }
+.pc-logo-text { color: #fff; font-weight: 700; font-size: 16px; }
+.pc-logo-sub { color: #666d78; font-size: 11px; }
+.pc-logout { padding: 8px 20px; background: #dc2626; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; }
+
+.pc-body { display: flex; flex: 1; }
+.pc-sidebar { width: 240px; background: #111827; padding: 20px 12px; }
+.pc-menu-item { padding: 13px 20px; border-radius: 10px; color: #878fa3; font-size: 13px; cursor: pointer; margin-bottom: 4px; }
+.pc-menu-item.active { background: #F5AD27; color: #fff; font-weight: 700; border-left: 4px solid #F5AD27; }
+.pc-menu-item:hover:not(.active) { background: rgba(255,255,255,0.05); color: #e0e3e8; }
+
+.pc-main { flex: 1; padding: 32px; overflow-y: auto; }
+
+.pc-alert { padding: 14px 20px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; font-weight: 500; }
+.pc-alert-ok { background: #d1fae5; border: 1px solid #6ee7b7; color: #065f46; }
+.pc-alert-error { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
+
+.pc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+.pc-title { font-size: 22px; font-weight: 700; color: #161a22; }
+.pc-subtitle { font-size: 12px; color: #666d78; margin-top: 4px; }
+
+.pc-btn-primary { padding: 11px 22px; background: #F5AD27; color: #000; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; }
+.pc-btn-primary:hover { background: #D18E12; }
+.pc-btn-primary:disabled { background: #b0bec5; cursor: not-allowed; }
+.pc-btn-secondary { padding: 11px 22px; background: #F5F5F5; color: #D18E12; border: 1.5px solid #e0e3e8; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; }
+
+.pc-filtros { margin-bottom: 20px; }
+.pc-search { padding: 11px 16px; border: 1.5px solid #e0e3e8; border-radius: 8px; font-size: 13px; width: 360px; outline: none; }
+.pc-search:focus { border-color: #F5AD27; }
+
+.pc-table-wrap { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow-x: auto; }
+.pc-table { width: 100%; border-collapse: collapse; }
+.pc-table th { padding: 14px 16px; text-align: left; font-size: 11px; font-weight: 700; color: #666d78; text-transform: uppercase; background: #f8f9fb; border-bottom: 1px solid #e0e3e8; }
+.pc-table td { padding: 16px; font-size: 13px; color: #161a22; border-bottom: 1px solid #f0f2f5; }
+.pc-table tr:last-child td { border-bottom: none; }
+.pc-table tr:hover td { background: #fafbfc; }
+.pc-empty { text-align: center; color: #999; padding: 40px !important; }
+
+.pc-badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.badge-disponible { background: #d1fae5; color: #065f46; }
+.badge-lleno { background: #fee2e2; color: #991b1b; }
+
+.pc-cupo-ok { color: #065f46; font-weight: 600; }
+.pc-cupo-lleno { color: #991b1b; font-weight: 600; }
+
+.pc-acciones { display: flex; gap: 6px; }
+.pc-btn-edit { padding: 5px 12px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 6px; cursor: pointer; font-size: 12px; }
+.pc-btn-delete { padding: 5px 12px; background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; border-radius: 6px; cursor: pointer; font-size: 12px; }
+
+.pc-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.pc-modal { background: #fff; border-radius: 16px; padding: 36px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.pc-modal h2 { font-size: 20px; font-weight: 700; color: #0A0F1A; margin-bottom: 24px; }
+
+.pc-form { display: flex; flex-direction: column; gap: 16px; }
+.pc-row { display: flex; gap: 14px; }
+.pc-row .pc-field { flex: 1; }
+.pc-field { display: flex; flex-direction: column; gap: 6px; }
+.pc-field label { font-size: 11px; font-weight: 700; color: #555; letter-spacing: 0.5px; }
+.pc-field input, .pc-field select { padding: 12px 14px; border: 1.5px solid #e0e3e8; border-radius: 8px; font-size: 14px; outline: none; }
+.pc-field input:focus, .pc-field select:focus { border-color: #F5AD27; }
+.pc-form-actions { display: flex; gap: 10px; margin-top: 8px; }

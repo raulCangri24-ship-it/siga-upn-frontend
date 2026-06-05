@@ -1,0 +1,76 @@
+﻿.mp-container { display: flex; flex-direction: column; min-height: 100vh; background: #F5F5F5; }
+
+/* Navbar */
+.mp-navbar { height: 64px; background: #0A0F1A; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; }
+.mp-navbar-left { display: flex; align-items: center; gap: 12px; }
+.mp-navbar-right { display: flex; align-items: center; gap: 16px; }
+.mp-logo-dot { width: 32px; height: 32px; background: #F5AD27; border-radius: 6px; }
+.mp-logo-text { color: #fff; font-weight: 700; font-size: 16px; }
+.mp-logo-sub { color: #666d78; font-size: 11px; }
+.mp-user { color: #a8b4c8; font-size: 13px; }
+.mp-logout { padding: 8px 20px; background: #dc2626; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; }
+
+/* Body */
+.mp-body { display: flex; flex: 1; }
+
+/* Sidebar */
+.mp-sidebar { width: 240px; background: #111827; padding: 20px 12px; flex-shrink: 0; }
+.mp-menu-item { padding: 13px 20px; border-radius: 10px; color: #878fa3; font-size: 13px; cursor: pointer; margin-bottom: 4px; }
+.mp-menu-item.active { background: #F5AD27; color: #fff; font-weight: 700; border-left: 4px solid #F5AD27; }
+.mp-menu-item:hover:not(.active) { background: rgba(255,255,255,0.05); color: #e0e3e8; }
+
+/* Main */
+.mp-main { flex: 1; padding: 32px; overflow-y: auto; }
+
+/* Header */
+.mp-header { margin-bottom: 24px; }
+.mp-title { font-size: 22px; font-weight: 700; color: #161a22; }
+.mp-subtitle { font-size: 12px; color: #666d78; margin-top: 4px; }
+
+/* Stats */
+.mp-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+.mp-stat-card {
+  background: #fff; border-radius: 12px; padding: 20px;
+  text-align: center; border: 1px solid #e0e3e8;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+.mp-stat-card.alerta { border-color: #fca5a5; background: #fff9f9; }
+.mp-stat-card.verde { border-color: #6ee7b7; background: #f0fdf4; }
+.mp-stat-valor { font-size: 26px; font-weight: 800; color: #0A0F1A; margin-bottom: 4px; }
+.mp-stat-card.alerta .mp-stat-valor { color: #dc2626; }
+.mp-stat-card.verde .mp-stat-valor { color: #16a34a; }
+.mp-stat-label { font-size: 12px; color: #9ca3af; font-weight: 500; }
+
+/* Tabs */
+.mp-tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 2px solid #e0e3e8; }
+.mp-tab { padding: 12px 20px; background: none; border: none; cursor: pointer; font-size: 14px; color: #666d78; font-weight: 500; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+.mp-tab.active { color: #D18E12; border-bottom-color: #D18E12; font-weight: 700; }
+.mp-tab-count { background: #e0e3e8; color: #666d78; border-radius: 20px; padding: 2px 8px; font-size: 11px; }
+.mp-tab.active .mp-tab-count { background: #F5AD27; color: #fff; }
+
+/* Empty */
+.mp-empty { text-align: center; color: #9ca3af; padding: 48px; font-size: 14px; background: #fff; border-radius: 12px; }
+
+/* Tabla */
+.mp-table-wrap { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow-x: auto; }
+.mp-table { width: 100%; border-collapse: collapse; }
+.mp-table th { padding: 14px 16px; text-align: left; font-size: 11px; font-weight: 700; color: #666d78; text-transform: uppercase; background: #f8f9fb; border-bottom: 1px solid #e0e3e8; }
+.mp-table td { padding: 14px 16px; font-size: 13px; color: #374151; border-bottom: 1px solid #F5F5F5; }
+.mp-table tbody tr:hover { background: #f8f9fb; }
+.mp-table tbody tr:last-child td { border-bottom: none; }
+.mp-deuda-ref { font-size: 12px; color: #6b7280; }
+
+/* Badges */
+.mp-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+.mp-badge-pagada { background: #d1fae5; color: #16a34a; }
+.mp-badge-vencida { background: #fee2e2; color: #dc2626; }
+.mp-badge-pendiente { background: #fef3c7; color: #d97706; }
+.mp-badge-confirmado { background: #d1fae5; color: #16a34a; }
+.mp-badge-anulado { background: #f3f4f6; color: #6b7280; }
+.mp-badge-procesando { background: #eff6ff; color: #2563eb; }
+
+/* Aviso vencida */
+.mp-aviso-vencida {
+  margin-top: 20px; background: #fff7ed; border: 1px solid #fed7aa;
+  border-radius: 10px; padding: 16px 20px; font-size: 13px; color: #92400e; line-height: 1.6;
+}
