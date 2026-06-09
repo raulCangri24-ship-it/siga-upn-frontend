@@ -1,7 +1,8 @@
-﻿import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Home, GraduationCap, BookOpen, Clock, Wallet, Monitor } from 'lucide-react'
 import logoUpn from '../assets/logo-upn.png.png'
+import BackgroundGradientAnimation from './BackgroundGradientAnimation'
 
 const menuItems = [
   { label: 'Inicio',       ruta: '/dashboard/estudiante', Icon: Home },
@@ -19,10 +20,22 @@ function SidebarEstudiante() {
   return (
     <aside style={{
       width: '240px', flexShrink: 0, display: 'flex', flexDirection: 'column',
-      background: 'linear-gradient(180deg,#0A0F1A 0%,#111827 100%)',
+      position: 'relative', overflow: 'hidden',
       borderRight: '1px solid rgba(255,255,255,0.06)',
     }}>
-      <div style={{ padding: '18px 16px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <BackgroundGradientAnimation
+        gradientBackgroundStart="rgb(0, 10, 40)"
+        gradientBackgroundEnd="rgb(0, 20, 80)"
+        firstColor="30, 80, 200"
+        secondColor="10, 50, 180"
+        thirdColor="50, 100, 255"
+        fourthColor="20, 60, 160"
+        fifthColor="80, 120, 220"
+        pointerColor="100, 150, 255"
+        containerStyle={{ position: 'absolute', inset: 0 }}
+      />
+
+      <div style={{ position: 'relative', zIndex: 10, padding: '18px 16px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: '10px' }}>
         <img src={logoUpn} alt="UPN" style={{ height: '32px', objectFit: 'contain' }} />
         <div>
           <div style={{ color: '#fff', fontWeight: '700', fontSize: '14px', lineHeight: 1.2 }}>SIGA</div>
@@ -30,7 +43,7 @@ function SidebarEstudiante() {
         </div>
       </div>
 
-      <nav style={{ flex: 1, padding: '10px 8px' }}>
+      <nav style={{ position: 'relative', zIndex: 10, flex: 1, padding: '10px 8px' }}>
         {menuItems.map(({ label, ruta, Icon }) => {
           const active = location.pathname === ruta
             || (ruta !== '/dashboard/estudiante' && location.pathname.startsWith(ruta))
@@ -55,7 +68,7 @@ function SidebarEstudiante() {
         })}
       </nav>
 
-      <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center', fontSize: '10px', color: '#344d6b' }}>
+      <div style={{ position: 'relative', zIndex: 10, padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center', fontSize: '10px', color: '#344d6b' }}>
         SIGA-UPN · v2025
       </div>
     </aside>

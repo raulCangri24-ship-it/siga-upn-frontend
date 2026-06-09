@@ -1,9 +1,9 @@
 ﻿import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
-import { motion, AnimatePresence } from 'framer-motion'
 import './Login.css'
 import logoUpn from '../assets/logo-upn.png'
+import BackgroundGradientAnimation from '../components/BackgroundGradientAnimation'
 
 function Login() {
   const [correo, setCorreo] = useState('')
@@ -44,33 +44,81 @@ function Login() {
 
   return (
     <div style={{
-      width: '100vw', height: '100vh', display: 'flex', flexDirection: 'row',
-      margin: 0, padding: 0, overflow: 'hidden',
+      width: '100vw',
+      height: '100vh',
+      display: 'flex',
+      flexDirection: 'row',
+      margin: 0,
+      padding: 0,
+      overflow: 'hidden',
     }}>
 
-      {/* Panel izquierdo — dorado con logo */}
-      <div style={{
-        width: '50%', height: '100%', background: '#F5AD27',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <img src={logoUpn} alt="UPN" style={{ width: '320px', objectFit: 'contain' }} />
+      {/* Panel izquierdo — gradiente animado dorado con logo */}
+      <div style={{ width: '50%', height: '100%' }}>
+        <BackgroundGradientAnimation>
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10,
+          }}>
+            <img
+              src={logoUpn}
+              alt="UPN"
+              style={{ width: '280px', objectFit: 'contain' }}
+            />
+            <p style={{
+              marginTop: '20px',
+              color: 'rgba(255, 255, 255, 0.6)',
+              fontSize: '12px',
+              letterSpacing: '3px',
+              textTransform: 'uppercase',
+            }}>
+              Bienvenido al Sistema Institucional
+            </p>
+          </div>
+        </BackgroundGradientAnimation>
       </div>
 
       {/* Panel derecho — blanco con formulario */}
       <div style={{
-        width: '50%', height: '100%', background: '#ffffff',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: '50%',
+        height: '100%',
+        background: '#ffffff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}>
         <div style={{ width: '320px', display: 'flex', flexDirection: 'column' }}>
 
-          <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#111111', margin: '0 0 6px 0' }}>
+          <h1 style={{
+            fontSize: '28px',
+            fontWeight: '700',
+            color: '#111111',
+            margin: '0 0 6px 0',
+          }}>
             Iniciar sesión
           </h1>
-          <p style={{ fontSize: '13px', color: '#9ca3af', margin: '0 0 28px 0', lineHeight: '1.4' }}>
+          <p style={{
+            fontSize: '13px',
+            color: '#9ca3af',
+            margin: '0 0 28px 0',
+            lineHeight: '1.4',
+          }}>
             Ingresa tus credenciales institucionales para continuar
           </p>
 
-          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#374151', letterSpacing: '0.5px', marginBottom: '6px' }}>
+          <label style={{
+            display: 'block',
+            fontSize: '11px',
+            fontWeight: '600',
+            color: '#374151',
+            letterSpacing: '0.5px',
+            marginBottom: '6px',
+          }}>
             CORREO INSTITUCIONAL
           </label>
           <input
@@ -80,13 +128,26 @@ function Login() {
             placeholder="usuario@sga.edu.pe"
             required
             style={{
-              width: '100%', padding: '12px 14px', border: '1px solid #e5e7eb',
-              borderRadius: '8px', fontSize: '14px', color: '#111111',
-              outline: 'none', boxSizing: 'border-box', marginBottom: '20px',
+              width: '100%',
+              padding: '12px 14px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '8px',
+              fontSize: '14px',
+              color: '#111111',
+              outline: 'none',
+              boxSizing: 'border-box',
+              marginBottom: '20px',
             }}
           />
 
-          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#374151', letterSpacing: '0.5px', marginBottom: '6px' }}>
+          <label style={{
+            display: 'block',
+            fontSize: '11px',
+            fontWeight: '600',
+            color: '#374151',
+            letterSpacing: '0.5px',
+            marginBottom: '6px',
+          }}>
             CONTRASEÑA
           </label>
           <input
@@ -96,14 +157,25 @@ function Login() {
             placeholder="••••••••"
             required
             style={{
-              width: '100%', padding: '12px 14px', border: '1px solid #e5e7eb',
-              borderRadius: '8px', fontSize: '14px', color: '#111111',
-              outline: 'none', boxSizing: 'border-box', marginBottom: '28px',
+              width: '100%',
+              padding: '12px 14px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '8px',
+              fontSize: '14px',
+              color: '#111111',
+              outline: 'none',
+              boxSizing: 'border-box',
+              marginBottom: '28px',
             }}
           />
 
           {error && (
-            <p style={{ fontSize: '12px', color: '#ef4444', textAlign: 'center', margin: '0 0 16px 0' }}>
+            <p style={{
+              fontSize: '12px',
+              color: '#ef4444',
+              textAlign: 'center',
+              margin: '0 0 16px 0',
+            }}>
               ⚠ {error}
             </p>
           )}
@@ -113,9 +185,14 @@ function Login() {
             onClick={handleLogin}
             disabled={cargando}
             style={{
-              width: '100%', padding: '14px', background: '#F5AD27',
-              color: '#ffffff', fontSize: '15px', fontWeight: '700',
-              border: 'none', borderRadius: '8px',
+              width: '100%',
+              padding: '14px',
+              background: '#F5AD27',
+              color: '#ffffff',
+              fontSize: '15px',
+              fontWeight: '700',
+              border: 'none',
+              borderRadius: '8px',
               cursor: cargando ? 'not-allowed' : 'pointer',
               opacity: cargando ? 0.7 : 1,
               marginBottom: '24px',

@@ -3,12 +3,14 @@ import logoUpn from '../assets/logo-upn.png.png'
 import { motion } from 'framer-motion'
 import { ClipboardList, UserCheck, FileText, BookOpen, LogOut, Bell } from 'lucide-react'
 import SidebarDocente from '../components/SidebarDocente'
+import BackgroundGradientAnimation from '../components/BackgroundGradientAnimation'
+import GlowCard from '../components/GlowCard'
 
 const accesos = [
-  { titulo: 'Mis Cursos',    desc: 'Ver secciones asignadas y materiales',  Icon: BookOpen,     color: '#3B4A5A', ruta: '/docente/cursos' },
-  { titulo: 'Evaluaciones',  desc: 'Registrar notas y evaluaciones',        Icon: ClipboardList, color: '#6d28d9', ruta: '/docente/evaluaciones' },
-  { titulo: 'Asistencia',    desc: 'Registrar asistencia de estudiantes',   Icon: UserCheck,    color: '#065f46', ruta: '/docente/asistencia' },
-  { titulo: 'Actas',         desc: 'Generar y firmar actas académicas',     Icon: FileText,     color: '#b45309', ruta: '/docente/actas' },
+  { titulo: 'Mis Cursos',    desc: 'Ver secciones asignadas y materiales',  Icon: BookOpen,      color: '#3B4A5A', glowColor: 'blue',   ruta: '/docente/cursos' },
+  { titulo: 'Evaluaciones',  desc: 'Registrar notas y evaluaciones',        Icon: ClipboardList, color: '#6d28d9', glowColor: 'purple', ruta: '/docente/evaluaciones' },
+  { titulo: 'Asistencia',    desc: 'Registrar asistencia de estudiantes',   Icon: UserCheck,     color: '#065f46', glowColor: 'green',  ruta: '/docente/asistencia' },
+  { titulo: 'Actas',         desc: 'Generar y firmar actas académicas',     Icon: FileText,      color: '#b45309', glowColor: 'orange', ruta: '/docente/actas' },
 ]
 
 const cardVar = {
@@ -23,13 +25,24 @@ function DashboardDocente() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#F5F5F5' }}>
 
-      <nav style={{ height: '60px', background: '#0A0F1A', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <nav style={{ height: '60px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+        <BackgroundGradientAnimation
+          gradientBackgroundStart="rgb(0, 10, 40)"
+          gradientBackgroundEnd="rgb(0, 20, 80)"
+          firstColor="30, 80, 200"
+          secondColor="10, 50, 180"
+          thirdColor="50, 100, 255"
+          fourthColor="20, 60, 160"
+          fifthColor="80, 120, 220"
+          pointerColor="100, 150, 255"
+          containerStyle={{ position: 'absolute', inset: 0 }}
+        />
+        <div style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', gap: '10px' }}>
           <img src={logoUpn} alt="UPN" style={{ height: "36px", objectFit: "contain" }} />
           <span style={{ color: '#fff', fontWeight: '700', fontSize: '15px' }}>SIGA</span>
           <span style={{ color: '#344d6b', fontSize: '12px', marginLeft: '4px' }}>· Portal Docente</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', gap: '16px' }}>
           <Bell size={17} color="#4a6a96" />
           <span style={{ color: '#8badd4', fontSize: '13px' }}>{nombre}</span>
           <motion.button whileTap={{ scale: 0.95 }}
@@ -45,12 +58,24 @@ function DashboardDocente() {
         <main style={{ flex: 1, padding: '36px 40px', overflowY: 'auto' }}>
 
           {/* Greeting */}
-          <motion.div initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-            style={{ background: 'linear-gradient(135deg,#0A0F1A 0%,#111827 100%)', borderRadius: '18px', padding: '28px 32px', marginBottom: '32px', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', top: -40, right: -40, width: '180px', height: '180px', background: 'rgba(245,173,39,0.08)', borderRadius: '50%' }} />
-            <div style={{ color: '#F5AD27', fontSize: '12px', fontWeight: '600', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px' }}>Bienvenido</div>
-            <h1 style={{ color: '#fff', fontSize: '24px', fontWeight: '700', margin: '0 0 4px 0' }}>{nombre}</h1>
-            <p style={{ color: '#8badd4', fontSize: '13px', margin: 0 }}>Portal Docente · SIGA-UPN · Periodo 2026-1</p>
+          <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+            style={{ borderRadius: '18px', marginBottom: '32px', position: 'relative', overflow: 'hidden', height: '120px' }}>
+            <BackgroundGradientAnimation
+              gradientBackgroundStart="rgb(0, 10, 40)"
+              gradientBackgroundEnd="rgb(0, 20, 80)"
+              firstColor="30, 80, 200"
+              secondColor="10, 50, 180"
+              thirdColor="50, 100, 255"
+              fourthColor="20, 60, 160"
+              fifthColor="80, 120, 220"
+              pointerColor="100, 150, 255"
+            >
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '28px 32px', zIndex: 10 }}>
+                <div style={{ color: '#F5AD27', fontSize: '12px', fontWeight: '600', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '8px' }}>Bienvenido</div>
+                <h1 style={{ color: '#fff', fontSize: '24px', fontWeight: '700', margin: '0 0 4px 0' }}>{nombre}</h1>
+                <p style={{ color: '#8badd4', fontSize: '13px', margin: 0 }}>Portal Docente · SIGA-UPN · Periodo 2026-1</p>
+              </div>
+            </BackgroundGradientAnimation>
           </motion.div>
 
           <div style={{ marginBottom: '20px' }}>
@@ -62,15 +87,21 @@ function DashboardDocente() {
               const { Icon } = item
               return (
                 <motion.div key={i} custom={i} variants={cardVar} initial="hidden" animate="visible"
-                  whileHover={{ y: -4, boxShadow: '0 12px 32px rgba(0,0,0,0.14)', transition: { duration: 0.2 } }}
-                  onClick={() => navigate(item.ruta)}
-                  style={{ background: '#fff', borderRadius: '16px', padding: '24px', cursor: 'pointer', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                  <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-                    <Icon size={20} color="#fff" strokeWidth={1.8} />
-                  </div>
-                  <div style={{ fontSize: '15px', fontWeight: '700', color: '#3B4A5A', marginBottom: '6px' }}>{item.titulo}</div>
-                  <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: 1.5 }}>{item.desc}</div>
-                  <div style={{ marginTop: '14px', fontSize: '12px', color: item.color, fontWeight: '600' }}>Abrir →</div>
+                  whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                >
+                  <GlowCard
+                    glowColor={item.glowColor}
+                    onClick={() => navigate(item.ruta)}
+                    width="100%"
+                    style={{ padding: '24px' }}
+                  >
+                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                      <Icon size={20} color="#fff" strokeWidth={1.8} />
+                    </div>
+                    <div style={{ fontSize: '15px', fontWeight: '700', color: '#3B4A5A', marginBottom: '6px' }}>{item.titulo}</div>
+                    <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: 1.5 }}>{item.desc}</div>
+                    <div style={{ marginTop: '14px', fontSize: '12px', color: item.color, fontWeight: '600' }}>Abrir →</div>
+                  </GlowCard>
                 </motion.div>
               )
             })}
