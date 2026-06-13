@@ -1,16 +1,17 @@
-﻿import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { listarMisMatriculas } from '../services/matriculaService'
 import { obtenerNotasEstudiante } from '../services/evaluacionService'
-import './MisNotas.css'
-import logoUpn from '../assets/logo-upn.png.png'
-import SidebarEstudiante from '../components/SidebarEstudiante'
+import PageShell from '../components/PageShell'
+import PageHeader from '../components/ui/PageHeader'
+
+const cardVar = {
+  hidden: { opacity: 0, y: 16 },
+  visible: (i) => ({ opacity: 1, y: 0, transition: { delay: i * 0.07, duration: 0.4 } }),
+}
 
 function MisNotas() {
-  const navigate = useNavigate()
   const idEstudiante = localStorage.getItem('idUsuario')
-  const nombre = localStorage.getItem('nombre')
-
   const [cursosConNotas, setCursosConNotas] = useState([])
   const [cargando, setCargando] = useState(true)
 
@@ -19,157 +20,92 @@ function MisNotas() {
       try {
         const matriculasRes = await listarMisMatriculas(idEstudiante)
         const activas = (matriculasRes.data || []).filter(m => m.estado !== 'CANCELADA')
-
-        const seccionesUnicas = activas.filter((v, i, arr) =>
-          arr.findIndex(x => x.seccion === v.seccion) === i
-        )
-
         const resultados = await Promise.all(
           activas
             .filter((v, i, arr) => arr.findIndex(x => x.seccion === v.seccion) === i)
             .map(async (m) => {
               try {
                 const notasRes = await obtenerNotasEstudiante(idEstudiante, m.idSeccion)
-                return {
-                  nombreCurso: m.curso,
-                  idSeccion: m.seccion || m.idSeccion,
-                  periodo: m.periodo,
-                  ...notasRes.data
-                }
+                return { nombreCurso: m.curso, idSeccion: m.seccion || m.idSeccion, periodo: m.periodo, ...notasRes.data }
               } catch {
-                return {
-                  nombreCurso: m.curso,
-                  idSeccion: m.seccion || m.idSeccion,
-                  periodo: m.periodo,
-                  notas: [],
-                  promedio: 0,
-                  estado: 'SIN NOTAS'
-                }
+                return { nombreCurso: m.curso, idSeccion: m.seccion || m.idSeccion, periodo: m.periodo, notas: [], promedio: 0, estado: 'SIN NOTAS' }
               }
             })
         )
         setCursosConNotas(resultados)
-      } catch {
-        setCursosConNotas([])
-      } finally {
-        setCargando(false)
-      }
+      } catch { setCursosConNotas([]) }
+      finally { setCargando(false) }
     }
     cargar()
   }, [idEstudiante])
 
-  const colorEstado = (estado) => {
-    if (estado === 'APROBADO') return 'mn-badge-aprobado'
-    if (estado === 'DESAPROBADO') return 'mn-badge-desaprobado'
-    return 'mn-badge-sin-notas'
+  const estadoBadge = (estado) => {
+    if (estado === 'APROBADO') return { bg: 'var(--success-bg)', color: 'var(--success-text)' }
+    if (estado === 'DESAPROBADO') return { bg: 'var(--danger-bg)', color: 'var(--danger-text)' }
+    return { bg: 'var(--bg-elevated)', color: 'var(--text-muted)' }
   }
 
-  const colorNota = (valor) => {
-    if (valor === null || valor === undefined) return ''
-    return parseFloat(valor) >= 11 ? 'mn-nota-ok' : 'mn-nota-mal'
+  const notaColor = (valor) => {
+    if (valor === null || valor === undefined) return 'var(--text-muted)'
+    return parseFloat(valor) >= 11 ? 'var(--success-text)' : 'var(--danger-text)'
   }
-
-  const menuItems = [
-    { label: 'Inicio',       ruta: '/dashboard/estudiante' },
-    { label: 'Mi Matrícula', ruta: '/estudiante/matricula' },
-    { label: 'Mis Notas',    ruta: '/estudiante/notas' },
-    { label: 'Horarios',     ruta: null },
-    { label: 'Mis Pagos',    ruta: '/estudiante/pagos' },
-    { label: 'Mis Accesos',  ruta: '/estudiante/accesos' },
-  ]
 
   return (
-    <div className="mn-container">
+    <PageShell role="estudiante" navTitle="Mis Notas">
+      <PageHeader title="Mis Notas" subtitle="Consulta tus calificaciones por curso y periodo académico" />
 
-      {/* NAVBAR */}
-      <nav className="mn-navbar">
-        <div className="mn-navbar-left">
-          <img src={logoUpn} alt="UPN" style={{ height: "36px", objectFit: "contain" }} />
-          <span className="mn-logo-text">SIGA</span>
-          <span className="mn-logo-sub">Sistema Integrado de Gestión Académica · UPN</span>
+      {cargando && (
+        <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)', fontSize: '14px' }}>Cargando notas...</div>
+      )}
+
+      {!cargando && cursosConNotas.length === 0 && (
+        <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', background: 'var(--bg-surface)', borderRadius: '14px', border: '1px solid var(--border)' }}>
+          No tienes matrículas activas con notas registradas.
         </div>
-        <div className="mn-navbar-right">
-          <span className="mn-user">👤 {nombre}</span>
-          <button className="mn-logout" onClick={() => { localStorage.clear(); navigate('/login') }}>
-            Cerrar sesión
-          </button>
-        </div>
-      </nav>
+      )}
 
-      <div className="mn-body">
-
-        {/* SIDEBAR */}
-        <SidebarEstudiante className="mn-sidebar">
-          {menuItems.map((item, i) => (
-            <div key={item.label}
-              className={`mn-menu-item ${i === 2 ? 'active' : ''}`}
-              onClick={() => item.ruta && navigate(item.ruta)}>
-              {item.label}
-            </div>
-          ))}
-        </SidebarEstudiante>
-
-        {/* MAIN */}
-        <main className="mn-main">
-          <div className="mn-header">
-            <h1 className="mn-title">Mis Notas</h1>
-            <p className="mn-subtitle">Consulta tus calificaciones por curso y periodo académico</p>
-          </div>
-
-          {cargando && (
-            <div className="mn-cargando">
-              <div className="mn-spinner" />
-              <p>Cargando notas...</p>
-            </div>
-          )}
-
-          {!cargando && cursosConNotas.length === 0 && (
-            <div className="mn-empty">
-              No tienes matrículas activas con notas registradas.
-            </div>
-          )}
-
-          {!cargando && cursosConNotas.map((curso, idx) => (
-            <div key={idx} className="mn-curso-card">
-
-              <div className="mn-curso-header">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {!cargando && cursosConNotas.map((curso, idx) => {
+          const badge = estadoBadge(curso.estado)
+          const promedioNum = parseFloat(curso.promedio)
+          return (
+            <motion.div key={idx} custom={idx} variants={cardVar} initial="hidden" animate="visible"
+              style={{ background: 'var(--bg-surface)', borderRadius: '14px', border: '1px solid var(--border)', overflow: 'hidden', boxShadow: 'var(--card-shadow)' }}>
+              <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-elevated)' }}>
                 <div>
-                  <h2 className="mn-curso-nombre">{curso.nombreCurso || '—'}</h2>
-                  <span className="mn-curso-meta">
-                    Sección {curso.idSeccion} · Periodo {curso.periodo}
-                  </span>
+                  <h2 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>{curso.nombreCurso || '—'}</h2>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Sección {curso.idSeccion} · Periodo {curso.periodo}</span>
                 </div>
-                <div className="mn-promedio-wrap">
-                  <div className={`mn-promedio-num ${curso.estado === 'APROBADO' ? 'aprobado' : curso.estado === 'DESAPROBADO' ? 'desaprobado' : ''}`}>
-                    {curso.promedio > 0 ? parseFloat(curso.promedio).toFixed(2) : '—'}
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '28px', fontWeight: '800', color: badge.color, lineHeight: 1 }}>
+                    {promedioNum > 0 ? promedioNum.toFixed(2) : '—'}
                   </div>
-                  <span className={`mn-badge ${colorEstado(curso.estado)}`}>{curso.estado}</span>
+                  <span style={{ marginTop: '4px', display: 'inline-block', padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', background: badge.bg, color: badge.color }}>{curso.estado}</span>
                 </div>
               </div>
-
               {curso.notas && curso.notas.length > 0 ? (
-                <div className="mn-notas-grid">
+                <div style={{ padding: '20px 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '12px' }}>
                   {curso.notas.map(n => (
-                    <div key={n.idEvaluacion} className="mn-nota-item">
-                      <div className="mn-nota-nombre">{n.nombreEvaluacion}</div>
-                      <div className="mn-nota-tipo">{n.tipo} · {n.peso}%</div>
-                      <div className={`mn-nota-valor ${colorNota(n.valor)}`}>
+                    <div key={n.idEvaluacion} style={{ background: 'var(--bg-elevated)', borderRadius: '10px', padding: '14px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>{n.nombreEvaluacion}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '10px' }}>{n.tipo} · {n.peso}%</div>
+                      <div style={{ fontSize: '22px', fontWeight: '800', color: notaColor(n.valor) }}>
                         {n.valor !== null && n.valor !== undefined
                           ? parseFloat(n.valor).toFixed(2)
-                          : <span className="mn-sin-nota">Sin nota</span>}
+                          : <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Sin nota</span>
+                        }
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="mn-sin-evaluaciones">No hay evaluaciones configuradas para este curso.</p>
+                <p style={{ padding: '20px 24px', color: 'var(--text-muted)', fontSize: '13px', fontStyle: 'italic' }}>No hay evaluaciones configuradas para este curso.</p>
               )}
-            </div>
-          ))}
-
-        </main>
+            </motion.div>
+          )
+        })}
       </div>
-    </div>
+    </PageShell>
   )
 }
 

@@ -1,24 +1,18 @@
-﻿*, *::before, *::after {
+/* Base reset — CSS vars are injected by ThemeContext */
+*, *::before, *::after {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
-html {
+html, body, #root {
   height: 100%;
   width: 100%;
   overflow: hidden;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-body {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-#root {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }

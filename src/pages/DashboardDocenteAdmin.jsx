@@ -1,188 +1,150 @@
-﻿import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import { UserCheck, Grid, FileCheck, TrendingUp } from 'lucide-react'
 import { getDashboardDocente } from '../services/dashboardService'
-import SidebarAdmin from '../components/SidebarAdmin'
-import './DashboardDocenteAdmin.css'
-import logoUpn from '../assets/logo-upn.png.png'
+import PageShell from '../components/PageShell'
+import PageHeader from '../components/ui/PageHeader'
+
+const cardVar = { hidden: { opacity: 0, y: 20 }, visible: (i) => ({ opacity: 1, y: 0, transition: { delay: i * 0.08, duration: 0.4 } }) }
 
 function DashboardDocenteAdmin() {
-  const navigate = useNavigate()
   const [data, setData] = useState(null)
   const [cargando, setCargando] = useState(true)
 
   useEffect(() => {
-    getDashboardDocente()
-      .then(r => setData(r.data))
-      .catch(() => setData(null))
-      .finally(() => setCargando(false))
+    getDashboardDocente().then(r => setData(r.data)).catch(() => setData(null)).finally(() => setCargando(false))
   }, [])
 
   const maxSec = data && data.seccionesPorDocente.length > 0
-    ? Math.max(...data.seccionesPorDocente.map(d => d.totalSecciones), 1)
-    : 1
+    ? Math.max(...data.seccionesPorDocente.map(d => d.totalSecciones), 1) : 1
+
+  const kpis = data ? [
+    { Icon: UserCheck, label: 'Total docentes', val: data.totalDocentes, sub: `${data.docentesActivos} activos`, color: 'var(--info-text)', bg: 'var(--info-bg)' },
+    { Icon: Grid, label: 'Secciones activas', val: data.totalSecciones, sub: 'Periodo 2026-1', color: 'var(--accent-blue)', bg: 'var(--info-bg)' },
+    { Icon: FileCheck, label: 'Actas firmadas', val: data.actasFirmadas, sub: `${data.actasBorrador} en borrador`, color: 'var(--success-text)', bg: 'var(--success-bg)' },
+    { Icon: TrendingUp, label: 'Cumplimiento actas', val: `${data.cumplimientoActas}%`, sub: `Asistencia: ${data.promedioAsistencia}%`, color: 'var(--accent)', bg: 'var(--warning-bg)' },
+  ] : []
+
+  const pctColor = (p) => p >= 80 ? 'var(--success-text)' : p >= 50 ? 'var(--warning-text)' : 'var(--danger-text)'
+  const pctBg = (p) => p >= 80 ? 'var(--success-bg)' : p >= 50 ? 'var(--warning-bg)' : 'var(--danger-bg)'
 
   return (
-    <div className="da-container">
+    <PageShell role="admin" navTitle="Dashboard Docente">
+      <PageHeader title="Dashboard Docente" subtitle="Indicadores de actividad docente, secciones y cumplimiento académico" />
 
-      <nav className="da-navbar">
-        <div className="da-navbar-left">
-          <img src={logoUpn} alt="UPN" style={{ height: "36px", objectFit: "contain" }} />
-          <span className="da-logo-text">SIGA</span>
-          <span className="da-logo-sub">Sistema Integrado de Gestión Académica · UPN</span>
+      {cargando && <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>Cargando indicadores...</div>}
+      {!cargando && !data && <div style={{ padding: '32px', borderRadius: '12px', background: 'var(--danger-bg)', color: 'var(--danger-text)', textAlign: 'center' }}>No se pudo cargar la información.</div>}
+
+      {!cargando && data && <>
+        {/* KPIs */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '24px' }}>
+          {kpis.map((k, i) => (
+            <motion.div key={i} custom={i} variants={cardVar} initial="hidden" animate="visible"
+              style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '14px', padding: '20px', boxShadow: 'var(--card-shadow)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: k.color, borderRadius: '14px 0 0 14px' }} />
+              <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: k.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
+                <k.Icon size={18} color={k.color} />
+              </div>
+              <div style={{ fontSize: '28px', fontWeight: '800', color: k.color, lineHeight: 1 }}>{k.val}</div>
+              <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)', margin: '6px 0 3px' }}>{k.label}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{k.sub}</div>
+            </motion.div>
+          ))}
         </div>
-        <button className="da-logout" onClick={() => { localStorage.clear(); navigate('/login') }}>
-          Cerrar sesión
-        </button>
-      </nav>
 
-      <div className="da-body">
-        <SidebarAdmin />
-
-        <main className="da-main">
-          <div className="da-header">
-            <h1 className="da-title">Dashboard Docente</h1>
-            <p className="da-subtitle">Indicadores de actividad docente, secciones y cumplimiento académico</p>
-          </div>
-
-          {cargando && <div className="da-cargando">Cargando indicadores...</div>}
-          {!cargando && !data && <div className="da-error">No se pudo cargar la información.</div>}
-
-          {!cargando && data && <>
-
-            {/* KPI Cards */}
-            <div className="da-kpi-grid">
-              <div className="da-kpi-card">
-                <div className="da-kpi-accent" style={{ background: '#1A3F7A' }} />
-                <div className="da-kpi-valor">{data.totalDocentes}</div>
-                <div className="da-kpi-label">Total docentes</div>
-                <div className="da-kpi-sub">{data.docentesActivos} activos</div>
-              </div>
-              <div className="da-kpi-card">
-                <div className="da-kpi-accent" style={{ background: '#0D2B55' }} />
-                <div className="da-kpi-valor">{data.totalSecciones}</div>
-                <div className="da-kpi-label">Secciones activas</div>
-                <div className="da-kpi-sub">Periodo 2026-1</div>
-              </div>
-              <div className="da-kpi-card">
-                <div className="da-kpi-accent" style={{ background: '#16a34a' }} />
-                <div className="da-kpi-valor">{data.actasFirmadas}</div>
-                <div className="da-kpi-label">Actas firmadas</div>
-                <div className="da-kpi-sub">{data.actasBorrador} en borrador</div>
-              </div>
-              <div className="da-kpi-card">
-                <div className="da-kpi-accent" style={{ background: '#FFC300' }} />
-                <div className="da-kpi-valor" style={{ color: '#0A1628' }}>{data.cumplimientoActas}%</div>
-                <div className="da-kpi-label">Cumplimiento actas</div>
-                <div className="da-kpi-sub">Asistencia: {data.promedioAsistencia}%</div>
-              </div>
-            </div>
-
-            <div className="da-charts-grid">
-
-              {/* Secciones por docente - barras */}
-              <div className="da-chart-card">
-                <h3 className="da-chart-title">Secciones por docente</h3>
-                {data.seccionesPorDocente.length === 0 ? (
-                  <p className="da-empty">No hay secciones registradas.</p>
-                ) : (
-                  <div className="da-chart-body">
-                    {data.seccionesPorDocente.map((d, i) => (
-                      <div key={i} className="da-bar-row">
-                        <div className="da-bar-label" title={d.nombreDocente}>
-                          {d.nombreDocente.split(' ')[0]}
+        {/* Charts */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+          {/* Secciones por docente */}
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.4 }}
+            style={{ background: 'var(--bg-surface)', borderRadius: '14px', border: '1px solid var(--border)', padding: '24px', boxShadow: 'var(--card-shadow)' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '20px' }}>Secciones por docente</h3>
+            {data.seccionesPorDocente.length === 0
+              ? <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No hay secciones registradas.</p>
+              : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {data.seccionesPorDocente.map((d, i) => {
+                    const pct = maxSec > 0 ? (d.totalSecciones / maxSec) * 100 : 0
+                    return (
+                      <div key={i}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                          <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)' }} title={d.nombreDocente}>{d.nombreDocente.split(' ')[0]}</span>
+                          <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--accent-blue)' }}>{d.totalSecciones}</span>
                         </div>
-                        <div className="da-bar-track">
-                          <div
-                            className="da-bar-fill"
-                            style={{ width: `${(d.totalSecciones / maxSec) * 100}%` }}>
-                            <span className="da-bar-num">{d.totalSecciones}</span>
-                          </div>
+                        <div style={{ height: '8px', background: 'var(--bg-elevated)', borderRadius: '4px', overflow: 'hidden' }}>
+                          <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 + i * 0.05 }}
+                            style={{ height: '100%', background: 'var(--accent-blue)', borderRadius: '4px' }} />
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                    )
+                  })}
+                </div>
+              )
+            }
+          </motion.div>
 
-              {/* Cumplimiento panel */}
-              <div className="da-chart-card">
-                <h3 className="da-chart-title">Indicadores generales</h3>
-                <div className="da-indicadores">
-                  <div className="da-indic-row">
-                    <div className="da-indic-label">Cumplimiento de actas</div>
-                    <div className="da-indic-bar-track">
-                      <div className="da-indic-bar-fill verde"
-                        style={{ width: `${Math.min(data.cumplimientoActas, 100)}%` }} />
-                    </div>
-                    <div className="da-indic-pct">{data.cumplimientoActas}%</div>
+          {/* Indicadores */}
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.4 }}
+            style={{ background: 'var(--bg-surface)', borderRadius: '14px', border: '1px solid var(--border)', padding: '24px', boxShadow: 'var(--card-shadow)' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '20px' }}>Indicadores generales</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {[
+                { label: 'Cumplimiento de actas', val: data.cumplimientoActas, color: 'var(--success-text)' },
+                { label: 'Promedio asistencia', val: data.promedioAsistencia, color: 'var(--info-text)' },
+                { label: 'Docentes activos', val: data.totalDocentes > 0 ? Math.round((data.docentesActivos / data.totalDocentes) * 100) : 0, color: 'var(--accent)' },
+              ].map(ind => (
+                <div key={ind.label}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)' }}>{ind.label}</span>
+                    <span style={{ fontSize: '13px', fontWeight: '800', color: ind.color }}>{ind.val}%</span>
                   </div>
-                  <div className="da-indic-row">
-                    <div className="da-indic-label">Promedio asistencia</div>
-                    <div className="da-indic-bar-track">
-                      <div className="da-indic-bar-fill azul"
-                        style={{ width: `${Math.min(data.promedioAsistencia, 100)}%` }} />
-                    </div>
-                    <div className="da-indic-pct">{data.promedioAsistencia}%</div>
-                  </div>
-                  <div className="da-indic-row">
-                    <div className="da-indic-label">Docentes activos</div>
-                    <div className="da-indic-bar-track">
-                      <div className="da-indic-bar-fill dorado"
-                        style={{ width: `${data.totalDocentes > 0 ? (data.docentesActivos / data.totalDocentes) * 100 : 0}%` }} />
-                    </div>
-                    <div className="da-indic-pct">
-                      {data.totalDocentes > 0
-                        ? Math.round((data.docentesActivos / data.totalDocentes) * 100)
-                        : 0}%
-                    </div>
+                  <div style={{ height: '8px', background: 'var(--bg-elevated)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(ind.val, 100)}%` }} transition={{ duration: 0.8, ease: 'easeOut', delay: 0.4 }}
+                      style={{ height: '100%', background: ind.color, borderRadius: '4px' }} />
                   </div>
                 </div>
-              </div>
-
+              ))}
             </div>
+          </motion.div>
+        </div>
 
-            {/* Tabla de docentes */}
-            <div className="da-table-card">
-              <h3 className="da-chart-title">Detalle por docente</h3>
-              {data.seccionesPorDocente.length === 0 ? (
-                <p className="da-empty">No hay datos disponibles.</p>
-              ) : (
-                <table className="da-table">
-                  <thead>
-                    <tr>
-                      <th>Docente</th>
-                      <th>Secciones</th>
-                      <th>Actas firmadas</th>
-                      <th>% Cumplimiento</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.seccionesPorDocente.map((d, i) => {
-                      const pct = d.totalSecciones > 0
-                        ? Math.round((d.actasFirmadas / d.totalSecciones) * 100)
-                        : 0
-                      return (
-                        <tr key={i}>
-                          <td><strong>{d.nombreDocente}</strong></td>
-                          <td>{d.totalSecciones}</td>
-                          <td>{d.actasFirmadas}</td>
-                          <td>
-                            <span className={`da-pct-badge ${pct >= 80 ? 'verde' : pct >= 50 ? 'ambar' : 'rojo'}`}>
-                              {pct}%
-                            </span>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              )}
-            </div>
-
-          </>}
-        </main>
-      </div>
-    </div>
+        {/* Tabla docentes */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55, duration: 0.4 }}
+          style={{ background: 'var(--bg-surface)', borderRadius: '14px', border: '1px solid var(--border)', padding: '24px', boxShadow: 'var(--card-shadow)' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '20px' }}>Detalle por docente</h3>
+          {data.seccionesPorDocente.length === 0
+            ? <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No hay datos disponibles.</p>
+            : (
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                    {['Docente', 'Secciones', 'Actas firmadas', '% Cumplimiento'].map(h => (
+                      <th key={h} style={{ padding: '8px 12px', fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left' }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.seccionesPorDocente.map((d, i) => {
+                    const pct = d.totalSecciones > 0 ? Math.round((d.actasFirmadas / d.totalSecciones) * 100) : 0
+                    return (
+                      <tr key={i} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.15s' }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'var(--table-hover)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                        <td style={{ padding: '12px', fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{d.nombreDocente}</td>
+                        <td style={{ padding: '12px', fontSize: '13px', color: 'var(--text-secondary)' }}>{d.totalSecciones}</td>
+                        <td style={{ padding: '12px', fontSize: '13px', color: 'var(--text-secondary)' }}>{d.actasFirmadas}</td>
+                        <td style={{ padding: '12px' }}>
+                          <span style={{ padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', background: pctBg(pct), color: pctColor(pct) }}>{pct}%</span>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            )
+          }
+        </motion.div>
+      </>}
+    </PageShell>
   )
 }
 

@@ -1,13 +1,13 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { Lock, Home, RefreshCw, AlertTriangle } from 'lucide-react'
 import { verificarRestriccion } from '../services/deudaService'
-import './RestriccionDeuda.css'
-import logoUpn from '../assets/logo-upn.png.png'
+import PageShell from '../components/PageShell'
 
 function RestriccionDeuda() {
   const navigate = useNavigate()
   const idEstudiante = localStorage.getItem('idUsuario')
-  const nombre = localStorage.getItem('nombre')
 
   const [deuda, setDeuda] = useState(null)
   const [cargando, setCargando] = useState(true)
@@ -16,18 +16,10 @@ function RestriccionDeuda() {
     const cargar = async () => {
       try {
         const res = await verificarRestriccion(idEstudiante)
-        if (res.data) {
-          setDeuda(res.data)
-        } else {
-          // Sin restricción activa — redirigir al portal
-          navigate('/estudiante/matricula')
-        }
-      } catch {
-        // 204 No Content llega como respuesta vacía, no como error
-        navigate('/estudiante/matricula')
-      } finally {
-        setCargando(false)
-      }
+        if (res.data) { setDeuda(res.data) }
+        else { navigate('/estudiante/matricula') }
+      } catch { navigate('/estudiante/matricula') }
+      finally { setCargando(false) }
     }
     cargar()
   }, [idEstudiante, navigate])
@@ -43,126 +35,80 @@ function RestriccionDeuda() {
     return `${d}/${m}/${y}`
   }
 
-  const menuItems = [
-    { label: 'Inicio', ruta: '/dashboard/estudiante' },
-    { label: 'Mi Matrícula', ruta: '/estudiante/matricula' },
-    { label: 'Mis Notas', ruta: null },
-    { label: 'Horarios', ruta: null },
-    { label: 'Mis Pagos', ruta: null },
-  ]
-
   if (cargando) {
     return (
-      <div className="rd-loading">
-        <div className="rd-spinner" />
-        <p>Verificando estado de cuenta...</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-app)', color: 'var(--text-muted)', fontSize: '14px' }}>
+        Verificando estado de cuenta...
       </div>
     )
   }
 
   return (
-    <div className="rd-container">
+    <PageShell role="estudiante" navTitle="Acceso Restringido">
+      <div style={{ maxWidth: '560px', margin: '40px auto' }}>
+        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+          style={{ background: 'var(--bg-surface)', borderRadius: '20px', border: '1px solid var(--border)', padding: '40px', textAlign: 'center', boxShadow: 'var(--card-shadow)' }}>
 
-      {/* NAVBAR */}
-      <nav className="rd-navbar">
-        <div className="rd-navbar-left">
-          <img src={logoUpn} alt="UPN" style={{ height: "36px", objectFit: "contain" }} />
-          <span className="rd-logo-text">SIGA</span>
-          <span className="rd-logo-sub">Sistema Integrado de Gestión Académica · UPN</span>
-        </div>
-        <div className="rd-navbar-right">
-          <span className="rd-user">👤 {nombre}</span>
-          <button className="rd-logout" onClick={() => {
-            localStorage.clear()
-            navigate('/login')
-          }}>Cerrar sesión</button>
-        </div>
-      </nav>
+          <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'var(--danger-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <Lock size={32} color="var(--danger-text)" />
+          </div>
 
-      <div className="rd-body">
+          <h1 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--danger-text)', marginBottom: '10px' }}>Acceso Restringido</h1>
+          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '28px', lineHeight: 1.6 }}>
+            Tu matrícula ha sido bloqueada por una deuda pendiente con la institución.
+          </p>
 
-        {/* SIDEBAR */}
-        <aside className="rd-sidebar">
-          {menuItems.map((item, i) => (
-            <div key={item.label}
-              className={`rd-menu-item ${i === 1 ? 'active' : ''}`}
-              onClick={() => item.ruta && navigate(item.ruta)}>
-              {item.label}
-            </div>
-          ))}
-        </aside>
-
-        {/* MAIN */}
-        <main className="rd-main">
-
-          <div className="rd-bloqueo-wrapper">
-
-            {/* Ícono de bloqueo */}
-            <div className="rd-icono-bloqueo">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="3" y="11" width="18" height="11" rx="2" fill="#dc2626"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#dc2626" strokeWidth="2" strokeLinecap="round"/>
-                <circle cx="12" cy="16" r="1.5" fill="white"/>
-              </svg>
-            </div>
-
-            <h1 className="rd-titulo">Acceso Restringido</h1>
-            <p className="rd-subtitulo">
-              Tu matrícula ha sido bloqueada por una deuda pendiente con la institución.
-            </p>
-
-            {deuda && (
-              <div className="rd-deuda-card">
-                <div className="rd-deuda-header">
-                  <span className="rd-deuda-badge">DEUDA VENCIDA</span>
-                  <span className="rd-deuda-id">Ref: {deuda.idDeuda}</span>
+          {deuda && (
+            <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}
+              style={{ background: 'var(--danger-bg)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '14px', padding: '24px', marginBottom: '28px', textAlign: 'left' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <span style={{ padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '800', background: 'rgba(239,68,68,0.25)', color: 'var(--danger-text)' }}>DEUDA VENCIDA</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>Ref: {deuda.idDeuda}</span>
+              </div>
+              <div style={{ fontSize: '36px', fontWeight: '800', color: 'var(--danger-text)', marginBottom: '6px' }}>{formatMonto(deuda.monto)}</div>
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px' }}>{deuda.concepto}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <div style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: '700', letterSpacing: '0.5px', marginBottom: '3px' }}>Fecha de vencimiento</div>
+                  <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--danger-text)' }}>{formatFecha(deuda.fechaVencimiento)}</div>
                 </div>
-
-                <div className="rd-deuda-monto">
-                  {formatMonto(deuda.monto)}
-                </div>
-
-                <div className="rd-deuda-concepto">{deuda.concepto}</div>
-
-                <div className="rd-deuda-info-grid">
-                  <div className="rd-info-item">
-                    <span className="rd-info-label">Fecha de vencimiento</span>
-                    <span className="rd-info-valor rd-vencida">{formatFecha(deuda.fechaVencimiento)}</span>
-                  </div>
-                  <div className="rd-info-item">
-                    <span className="rd-info-label">Estado</span>
-                    <span className="rd-info-valor rd-estado-badge">{deuda.estado}</span>
-                  </div>
+                <div>
+                  <div style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: '700', letterSpacing: '0.5px', marginBottom: '3px' }}>Estado</div>
+                  <span style={{ padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '800', background: 'rgba(239,68,68,0.25)', color: 'var(--danger-text)' }}>{deuda.estado}</span>
                 </div>
               </div>
-            )}
+            </motion.div>
+          )}
 
-            <div className="rd-instrucciones">
-              <h3>¿Cómo levantar la restricción?</h3>
-              <ol>
-                <li>Acércate a <strong>Caja de Tesorería</strong> (Pabellón A, 1er piso) con tu DNI.</li>
-                <li>Realiza el pago de la deuda indicada o suscríbete a un <strong>plan de pagos</strong>.</li>
-                <li>Una vez registrado el pago por administración, el acceso se restablecerá automáticamente.</li>
-              </ol>
+          <div style={{ background: 'var(--bg-elevated)', borderRadius: '12px', padding: '20px', marginBottom: '28px', textAlign: 'left' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+              <AlertTriangle size={16} color="var(--warning-text)" />
+              <h3 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)' }}>¿Cómo levantar la restricción?</h3>
             </div>
-
-            <div className="rd-acciones">
-              <button className="rd-btn-dashboard" onClick={() => navigate('/dashboard/estudiante')}>
-                Volver al Inicio
-              </button>
-              <button className="rd-btn-refresh" onClick={() => window.location.reload()}>
-                Actualizar estado
-              </button>
-            </div>
-
-            <p className="rd-contacto">
-              Consultas: <strong>tesoreria@upn.edu.pe</strong> · Interno <strong>1234</strong>
-            </p>
-
+            <ol style={{ paddingLeft: '18px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 2, margin: 0 }}>
+              <li>Acércate a <strong style={{ color: 'var(--text-primary)' }}>Caja de Tesorería</strong> (Pabellón A, 1er piso) con tu DNI.</li>
+              <li>Realiza el pago de la deuda o suscríbete a un <strong style={{ color: 'var(--text-primary)' }}>plan de pagos</strong>.</li>
+              <li>Una vez registrado el pago, el acceso se restablecerá automáticamente.</li>
+            </ol>
           </div>
-        </main>
+
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+            <button onClick={() => navigate('/dashboard/estudiante')}
+              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', padding: '11px', borderRadius: '10px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}>
+              <Home size={15} /> Volver al inicio
+            </button>
+            <button onClick={() => window.location.reload()}
+              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', padding: '11px', borderRadius: '10px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+              <RefreshCw size={15} /> Actualizar estado
+            </button>
+          </div>
+
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+            Consultas: <strong>tesoreria@upn.edu.pe</strong> · Interno <strong>1234</strong>
+          </p>
+        </motion.div>
       </div>
-    </div>
+    </PageShell>
   )
 }
 

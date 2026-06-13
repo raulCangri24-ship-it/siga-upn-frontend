@@ -37,16 +37,16 @@ function GlowCard({ children, glowColor = 'blue', width, height, style = {}, onC
           --my: 50%;
           position: relative;
           overflow: hidden;
-          background: #fff;
+          background: var(--bg-surface, #fff);
           border-radius: 16px;
-          border: 1px solid #e5e7eb;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+          border: 1px solid var(--border, #e5e7eb);
+          box-shadow: var(--card-shadow, 0 2px 8px rgba(0,0,0,0.05));
           cursor: pointer;
           transition: box-shadow 0.25s ease;
           box-sizing: border-box;
         }
         .${id}:hover {
-          box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+          box-shadow: 0 12px 32px rgba(0,0,0,0.18);
         }
         .${id}::before {
           content: '';

@@ -1,8 +1,8 @@
-import { useNavigate, useLocation } from 'react-router-dom'
+﻿import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Home, Users, CalendarDays, Wallet, DollarSign, LayoutDashboard } from 'lucide-react'
 import logoUpn from '../assets/logo-upn.png.png'
-import BackgroundGradientAnimation from './BackgroundGradientAnimation'
+import { useTheme } from '../context/ThemeContext'
 
 const menuItems = [
   { label: 'Inicio',       ruta: '/dashboard/admin',    Icon: Home },
@@ -16,31 +16,42 @@ const menuItems = [
 function SidebarAdmin() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { isDark } = useTheme()
+
+  // Colores según tema
+  const brandText = isDark ? '#fff' : '#1a202c'
+  const brandSub = isDark ? '#4a6a96' : '#64748b'
+  const borderColor = isDark ? 'rgba(255,255,255,0.07)' : '#e2e8f0'
+  const footerText = isDark ? '#344d6b' : '#94a3b8'
+  const menuInactiveText = isDark ? '#7090b8' : '#4a5568'
+  const menuInactiveIcon = isDark ? '#4a6a96' : '#94a3b8'
 
   return (
     <aside style={{
       width: '240px', flexShrink: 0, display: 'flex', flexDirection: 'column',
       position: 'relative', overflow: 'hidden',
-      borderRight: '1px solid rgba(255,255,255,0.06)',
+      borderRight: `1px solid ${borderColor}`,
+      height: '100%',
     }}>
-      <BackgroundGradientAnimation
-        gradientBackgroundStart="rgb(0, 10, 40)"
-        gradientBackgroundEnd="rgb(0, 20, 80)"
-        firstColor="30, 80, 200"
-        secondColor="10, 50, 180"
-        thirdColor="50, 100, 255"
-        fourthColor="20, 60, 160"
-        fifthColor="80, 120, 220"
-        pointerColor="100, 150, 255"
-        containerStyle={{ position: 'absolute', inset: 0 }}
-      />
+
+      {/* Fondo animado — oscuro: azul marino, claro: blanco con círculos azules */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: isDark ? '#0f121d' : '#ffffff',
+        transition: 'background 0.3s ease',
+      }} />
 
       {/* Brand */}
-      <div style={{ position: 'relative', zIndex: 10, padding: '18px 16px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div style={{
+        position: 'relative', zIndex: 10,
+        padding: '18px 16px 14px',
+        borderBottom: `1px solid ${borderColor}`,
+        display: 'flex', alignItems: 'center', gap: '10px'
+      }}>
         <img src={logoUpn} alt="UPN" style={{ height: '32px', objectFit: 'contain' }} />
         <div>
-          <div style={{ color: '#fff', fontWeight: '700', fontSize: '14px', lineHeight: 1.2 }}>SIGA</div>
-          <div style={{ color: '#4a6a96', fontSize: '10px' }}>Sistema de Gestión Académica</div>
+          <div style={{ color: brandText, fontWeight: '700', fontSize: '14px', lineHeight: 1.2 }}>SIGA</div>
+          <div style={{ color: brandSub, fontSize: '10px' }}>Sistema de Gestión Académica</div>
         </div>
       </div>
 
@@ -61,8 +72,8 @@ function SidebarAdmin() {
                 background: active ? 'rgba(245,173,39,0.12)' : 'transparent',
                 borderLeft: active ? '3px solid #F5AD27' : '3px solid transparent',
               }}>
-              <Icon size={15} color={active ? '#F5AD27' : '#4a6a96'} strokeWidth={active ? 2.5 : 1.8} />
-              <span style={{ color: active ? '#F5AD27' : '#7090b8', fontSize: '13px', fontWeight: active ? '700' : '400' }}>
+              <Icon size={15} color={active ? '#F5AD27' : menuInactiveIcon} strokeWidth={active ? 2.5 : 1.8} />
+              <span style={{ color: active ? '#F5AD27' : menuInactiveText, fontSize: '13px', fontWeight: active ? '700' : '400' }}>
                 {label}
               </span>
             </motion.div>
@@ -70,7 +81,12 @@ function SidebarAdmin() {
         })}
       </nav>
 
-      <div style={{ position: 'relative', zIndex: 10, padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center', fontSize: '10px', color: '#344d6b' }}>
+      <div style={{
+        position: 'relative', zIndex: 10,
+        padding: '12px 16px',
+        borderTop: `1px solid ${borderColor}`,
+        textAlign: 'center', fontSize: '10px', color: footerText
+      }}>
         SIGA-UPN · v2025
       </div>
     </aside>
