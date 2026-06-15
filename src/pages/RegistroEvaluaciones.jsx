@@ -76,10 +76,16 @@ function RegistroEvaluaciones() {
       if (valor === '' || valor === null) continue
       const num = parseFloat(valor)
       if (isNaN(num) || num < 0 || num > 20) { error++; continue }
-      try {
-        await registrarNota({ idEstudiante: fila.idEstudiante, idEvaluacion: nota.idEvaluacion, valor: num })
-        exito++
-      } catch { error++ }
+        try {
+          await registrarNota({ idEstudiante: fila.idEstudiante, idEvaluacion: nota.idEvaluacion, valor: num })
+          exito++
+        } catch (err) {
+          error++
+          const mensajeError = err.response?.data || 'Error al guardar nota'
+          mostrarMsg(mensajeError, 'error')
+          setGuardando(false)
+          return
+        }
     }
     setGuardando(false)
     if (error > 0) mostrarMsg(`${exito} nota(s) guardada(s), ${error} con error`, 'error')
