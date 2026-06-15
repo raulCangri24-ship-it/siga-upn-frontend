@@ -5,9 +5,9 @@ import logoUpn from '../assets/logo-upn.png.png'
 import { useTheme } from '../context/ThemeContext'
 
 const menuItems = [
-  { label: 'Dashboard',    ruta: '/coordinador/dashboard', Icon: Home },
-  { label: 'Programación', ruta: '/admin/programacion',    Icon: CalendarDays },
-  { label: 'Actas',        ruta: '/docente/actas',         Icon: FileText },
+  { label: 'Dashboard',    ruta: '/coordinador/dashboard',     Icon: Home },
+  { label: 'Programación', ruta: '/coordinador/programacion',  Icon: CalendarDays },
+  { label: 'Actas',        ruta: '/coordinador/actas',         Icon: FileText },
 ]
 
 const BRAND_COLOR = '#F5AD27'

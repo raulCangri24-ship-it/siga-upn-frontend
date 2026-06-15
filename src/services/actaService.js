@@ -13,3 +13,6 @@ export const generarActa = (idSeccion, idDocente) =>
 
 export const cerrarActa = (idActa) =>
   api.patch(`${BASE}/${idActa}/cerrar`, {}, h())
+
+export const cerrarPorCoordinador = (idActa) =>
+  api.put(`${BASE}/${idActa}/cerrar-coordinador`, {}, h())

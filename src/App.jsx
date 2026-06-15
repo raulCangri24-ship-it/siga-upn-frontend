@@ -23,6 +23,8 @@ import DashboardRector from './pages/DashboardRector'
 import MisCursos from './pages/MisCursos'
 import DashboardUnificado from './pages/DashboardUnificado'
 import DashboardCoordinador from './pages/DashboardCoordinador'
+import ProgramacionCoordinador from './pages/coordinador/ProgramacionCoordinador'
+import ActasCoordinador from './pages/coordinador/ActasCoordinador'
 
 function App() {
   return (
@@ -159,6 +161,18 @@ function App() {
       <Route path="/coordinador/dashboard" element={
         <RutaProtegida rolRequerido="COORDINADOR">
           <DashboardCoordinador />
+        </RutaProtegida>
+      } />
+
+      <Route path="/coordinador/programacion" element={
+        <RutaProtegida rolRequerido="COORDINADOR">
+          <ProgramacionCoordinador />
+        </RutaProtegida>
+      } />
+
+      <Route path="/coordinador/actas" element={
+        <RutaProtegida rolRequerido="COORDINADOR">
+          <ActasCoordinador />
         </RutaProtegida>
       } />
 
