@@ -19,6 +19,7 @@ const BADGE = {
 }
 
 function GestionActas() {
+  const rolActual = localStorage.getItem('rol')?.toLowerCase() || 'admin'
   const idDocente = localStorage.getItem('idUsuario')
 
   const [actas, setActas] = useState([])
@@ -96,7 +97,7 @@ function GestionActas() {
   )
 
   return (
-    <PageShell role="docente" navTitle="Gestión de Actas">
+    <PageShell role={rolActual} navTitle="Gestión de Actas">
       <Alert message={mensaje} variant={tipoMensaje} onClose={() => setMensaje(null)} />
 
       <PageHeader title="Gestión de Actas" subtitle={`${actas.length} acta(s) · ${firmadas} firmada(s)`}>

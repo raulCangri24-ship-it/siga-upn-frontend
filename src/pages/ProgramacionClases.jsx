@@ -19,6 +19,7 @@ const rowVar = {
 }
 
 function ProgramacionClases() {
+  const rolActual = localStorage.getItem('rol')?.toLowerCase() || 'admin'
   const [secciones, setSecciones] = useState([])
   const [docentes, setDocentes] = useState([])
   const [aulas, setAulas] = useState([])
@@ -89,7 +90,7 @@ function ProgramacionClases() {
   )
 
   return (
-    <PageShell role="admin" navTitle="Programación de Clases">
+    <PageShell role={rolActual} navTitle="Programación de Clases">
       <Alert message={mensaje} variant={tipoMensaje} onClose={() => setMensaje(null)} />
 
       <PageHeader title="Programación de Clases" subtitle={`Periodo 2026-1 · ${secciones.length} secciones registradas`}>
