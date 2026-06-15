@@ -1,6 +1,6 @@
 ﻿import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { GraduationCap, Presentation, TrendingUp, ArrowRight } from 'lucide-react'
+import { GraduationCap, Presentation, ArrowRight } from 'lucide-react'
 import PageShell from '../components/PageShell'
 import { useTheme } from '../context/ThemeContext'
 
@@ -22,15 +22,6 @@ const dashboards = [
     stats: ['Secciones por docente', 'Cumplimiento actas', 'Promedio asistencia'],
     bgDark: 'linear-gradient(135deg, #2d1b69 0%, #4c1d95 50%, #7c3aed 100%)',
     bgLight: 'linear-gradient(135deg, #ede9fe 0%, #8b5cf6 100%)',
-  },
-  {
-    titulo: 'Dashboard Rector',
-    desc: 'Ingresos cobrados, deudas en mora, restricciones activas y ocupación institucional.',
-    Icon: TrendingUp, ruta: '/admin/dashboard/rector',
-    accent: '#F5AD27',
-    stats: ['Resumen financiero', 'Restricciones activas', 'Ocupación de aulas'],
-    bgDark: 'linear-gradient(135deg, #7c3c00 0%, #b45309 50%, #d97706 100%)',
-    bgLight: 'linear-gradient(135deg, #fef3c7 0%, #f59e0b 100%)',
   },
 ]
 

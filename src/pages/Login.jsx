@@ -30,7 +30,7 @@ function Login() {
       if (rol === 'ADMIN') navigate('/dashboard/admin')
       else if (rol === 'ESTUDIANTE') navigate('/dashboard/estudiante')
       else if (rol === 'DOCENTE') navigate('/dashboard/docente')
-      else if (rol === 'RECTOR') navigate('/dashboard/rector')
+      else if (rol === 'RECTOR') navigate('/rector/dashboard')
       else if (rol === 'COORDINADOR') navigate('/coordinador/dashboard')
       else navigate('/login')
     } catch (err) {

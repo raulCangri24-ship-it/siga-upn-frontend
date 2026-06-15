@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, RefreshCw, Search, CheckSquare } from 'lucide-react'
+import { Plus, RefreshCw, Search, CheckSquare, Lock } from 'lucide-react'
 import { listarDeudas, registrarDeuda, saldarDeuda } from '../services/deudaService'
 import { obtenerEstadoEstudiante } from '../services/sincronizacionService'
+import { bloquearEstudiante } from '../services/restriccionService'
 import PageShell from '../components/PageShell'
 import Alert from '../components/ui/Alert'
 import Modal from '../components/ui/Modal'
@@ -75,6 +76,14 @@ function GestionDeudas() {
       await saldarDeuda(idDeuda)
       mostrarMsg('Deuda saldada — restricción levantada automáticamente'); cargar()
     } catch (err) { mostrarMsg(err.response?.data || 'Error al saldar deuda', 'error') }
+  }
+
+  const handleBloquear = async (d) => {
+    if (!window.confirm(`¿Bloquear al estudiante ${d.idEstudiante} por la deuda "${d.concepto}"?`)) return
+    try {
+      await bloquearEstudiante(d.idEstudiante, d.idDeuda)
+      mostrarMsg('Estudiante bloqueado y notificado')
+    } catch (err) { mostrarMsg(err.response?.data || 'Error al bloquear estudiante', 'error') }
   }
 
   const deudaFiltradas = deudas.filter(d => {
@@ -182,11 +191,18 @@ function GestionDeudas() {
                       )}
                     </td>
                     <td style={{ padding: '12px 16px' }}>
-                      {d.estado !== 'PAGADA' && (
-                        <button onClick={() => handleSaldar(d.idDeuda, d.concepto)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '7px', background: 'var(--success-bg)', color: 'var(--success-text)', border: '1px solid rgba(16,185,129,0.2)', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
-                          <CheckSquare size={12} /> Saldar
-                        </button>
-                      )}
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                        {d.estado !== 'PAGADA' && (
+                          <button onClick={() => handleSaldar(d.idDeuda, d.concepto)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '7px', background: 'var(--success-bg)', color: 'var(--success-text)', border: '1px solid rgba(16,185,129,0.2)', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                            <CheckSquare size={12} /> Saldar
+                          </button>
+                        )}
+                        {(d.estado === 'PENDIENTE' || d.estado === 'VENCIDA') && (
+                          <button onClick={() => handleBloquear(d)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '7px', background: 'var(--danger-bg)', color: 'var(--danger-text)', border: '1px solid rgba(239,68,68,0.2)', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                            <Lock size={12} /> Bloquear
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </motion.tr>
                 )

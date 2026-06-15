@@ -129,7 +129,7 @@ function App() {
       } />
 
       <Route path="/admin/dashboard/estudiantil" element={
-        <RutaProtegida rolRequerido="ADMIN">
+        <RutaProtegida rolRequerido={["ADMIN", "RECTOR"]}>
           <DashboardEstudiantil />
         </RutaProtegida>
       } />
@@ -141,7 +141,13 @@ function App() {
       } />
 
       <Route path="/admin/dashboard/rector" element={
-        <RutaProtegida rolRequerido="ADMIN">
+        <RutaProtegida rolRequerido="RECTOR">
+          <DashboardRector />
+        </RutaProtegida>
+      } />
+
+      <Route path="/rector/dashboard" element={
+        <RutaProtegida rolRequerido="RECTOR">
           <DashboardRector />
         </RutaProtegida>
       } />

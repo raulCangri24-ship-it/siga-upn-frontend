@@ -1,70 +1,47 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Users, BookOpen, TrendingDown, Star } from 'lucide-react'
+import { Users, BookOpen, TrendingDown, Percent } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { getDashboardEstudiantil } from '../services/dashboardService'
 import PageShell from '../components/PageShell'
 import PageHeader from '../components/ui/PageHeader'
 
 const cardVar = { hidden: { opacity: 0, y: 20 }, visible: (i) => ({ opacity: 1, y: 0, transition: { delay: i * 0.08, duration: 0.4 } }) }
 
-const COLOR_ESTADO = {
-  ACTIVO: 'var(--success-text)', INACTIVO: 'var(--warning-text)', BLOQUEADO: 'var(--danger-text)',
-  CONFIRMADA: 'var(--accent-blue)', CANCELADA: 'var(--danger-text)', PENDIENTE: 'var(--warning-text)',
-}
-
-function BarChart({ data, colorMap, max }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      {Object.entries(data).map(([key, val]) => {
-        const pct = max > 0 ? (val / max) * 100 : 0
-        const color = colorMap[key] || 'var(--accent-blue)'
-        return (
-          <div key={key}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)' }}>{key}</span>
-              <span style={{ fontSize: '12px', fontWeight: '700', color }}>{val}</span>
-            </div>
-            <div style={{ height: '8px', background: 'var(--bg-elevated)', borderRadius: '4px', overflow: 'hidden' }}>
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${pct}%` }}
-                transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
-                style={{ height: '100%', background: color, borderRadius: '4px' }}
-              />
-            </div>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
 function DashboardEstudiantil() {
-  const [data, setData] = useState(null)
-  const [cargando, setCargando] = useState(true)
+  const rolActual = localStorage.getItem('rol')?.toLowerCase() || 'admin'
+  const [data, setData]             = useState(null)
+  const [cargando, setCargando]     = useState(true)
+  const [filtroCarrera, setFiltro]  = useState('TODAS')
 
   useEffect(() => {
-    getDashboardEstudiantil().then(r => setData(r.data)).catch(() => setData(null)).finally(() => setCargando(false))
+    getDashboardEstudiantil()
+      .then(r => setData(r.data))
+      .catch(() => setData(null))
+      .finally(() => setCargando(false))
   }, [])
 
-  const maxEstado = data ? Math.max(...Object.values(data.estudiantesPorEstado), 1) : 1
-  const maxMat = data ? Math.max(...Object.values(data.matriculasPorEstado), 1) : 1
+  const carreras = data ? ['TODAS', ...new Set((data.porCarrera || []).map(c => c.carrera))] : ['TODAS']
+  const carreraFiltrada = filtroCarrera !== 'TODAS' ? (data?.porCarrera || []).find(c => c.carrera === filtroCarrera) : null
+
+  const matriculadosActivos = carreraFiltrada ? carreraFiltrada.matriculados : (data?.matriculadosActivos || 0)
+  const deserciones         = carreraFiltrada ? carreraFiltrada.deserciones  : (data?.deserciones || 0)
+  const totalLocal          = matriculadosActivos + deserciones
+  const tasaLocal           = totalLocal > 0 ? ((deserciones / totalLocal) * 100).toFixed(1) : '0.0'
 
   const kpis = data ? [
-    { Icon: Users, label: 'Total estudiantes', val: data.totalEstudiantes, sub: `${data.estudiantesActivos} activos`, color: 'var(--info-text)', bg: 'var(--info-bg)' },
-    { Icon: BookOpen, label: 'Matrículas confirmadas', val: data.totalMatriculas, sub: `${data.estudiantesConDeudaVencida} con deuda vencida`, color: 'var(--success-text)', bg: 'var(--success-bg)' },
-    { Icon: TrendingDown, label: 'Tasa de deserción', val: `${data.tasaDesercion}%`, sub: 'Matrículas canceladas', color: data.tasaDesercion > 10 ? 'var(--danger-text)' : 'var(--warning-text)', bg: data.tasaDesercion > 10 ? 'var(--danger-bg)' : 'var(--warning-bg)' },
-    { Icon: Star, label: 'Promedio general', val: data.promedioGeneral, sub: 'Sobre 20 puntos', color: 'var(--accent)', bg: 'var(--warning-bg)' },
+    { Icon: Users,       label: 'Total estudiantes',    val: data.totalEstudiantes, color: 'var(--info-text)',    bg: 'var(--info-bg)' },
+    { Icon: BookOpen,    label: 'Matriculados activos', val: matriculadosActivos,   color: 'var(--success-text)', bg: 'var(--success-bg)' },
+    { Icon: TrendingDown,label: 'Deserciones',          val: deserciones,           color: 'var(--danger-text)',  bg: 'var(--danger-bg)' },
+    { Icon: Percent,     label: 'Tasa de deserción',    val: `${tasaLocal}%`,       color: parseFloat(tasaLocal) > 10 ? 'var(--danger-text)' : 'var(--warning-text)', bg: parseFloat(tasaLocal) > 10 ? 'var(--danger-bg)' : 'var(--warning-bg)' },
   ] : []
 
-  const rankColors = ['#F5AD27', '#C0C0C0', '#CD7F32']
-
   return (
-    <PageShell role="admin" navTitle="Dashboard Estudiantil">
-      <PageHeader title="Dashboard Estudiantil" subtitle="Indicadores clave sobre el desempeño y estado del alumnado" />
+    <PageShell role={rolActual} navTitle="Dashboard Estudiantil">
+      <PageHeader title="Dashboard Estudiantil" subtitle="Indicadores de matrícula y deserción académica por periodo" />
 
       {cargando && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px', color: 'var(--text-muted)', fontSize: '14px' }}>
+        <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
           Cargando indicadores...
         </div>
       )}
@@ -75,7 +52,18 @@ function DashboardEstudiantil() {
       )}
 
       {!cargando && data && <>
-        {/* KPIs */}
+        {/* Filtro carrera */}
+        <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Filtrar por carrera:
+          </label>
+          <select value={filtroCarrera} onChange={e => setFiltro(e.target.value)}
+            style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-surface)', color: 'var(--text-primary)', fontSize: '13px', cursor: 'pointer' }}>
+            {carreras.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+
+        {/* KPI Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '24px' }}>
           {kpis.map((k, i) => (
             <motion.div key={i} custom={i} variants={cardVar} initial="hidden" animate="visible"
@@ -86,61 +74,69 @@ function DashboardEstudiantil() {
               </div>
               <div style={{ fontSize: '28px', fontWeight: '800', color: k.color, lineHeight: 1 }}>{k.val}</div>
               <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-primary)', margin: '6px 0 3px' }}>{k.label}</div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{k.sub}</div>
             </motion.div>
           ))}
         </div>
 
-        {/* Gráficos */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.4 }}
-            style={{ background: 'var(--bg-surface)', borderRadius: '14px', border: '1px solid var(--border)', padding: '24px', boxShadow: 'var(--card-shadow)' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '20px' }}>Estudiantes por estado</h3>
-            <BarChart data={data.estudiantesPorEstado} colorMap={COLOR_ESTADO} max={maxEstado} />
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.4 }}
-            style={{ background: 'var(--bg-surface)', borderRadius: '14px', border: '1px solid var(--border)', padding: '24px', boxShadow: 'var(--card-shadow)' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '20px' }}>Matrículas por estado</h3>
-            <BarChart data={data.matriculasPorEstado} colorMap={COLOR_ESTADO} max={maxMat} />
-          </motion.div>
-        </div>
+        {/* Gráfico comparación periodos */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.4 }}
+          style={{ background: 'var(--bg-surface)', borderRadius: '14px', border: '1px solid var(--border)', padding: '24px', boxShadow: 'var(--card-shadow)', marginBottom: '16px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '20px' }}>
+            Comparación de matrículas por periodo
+          </h3>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={data.comparacionPeriodos || []} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="periodo" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+              <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+              <Tooltip
+                contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '12px' }}
+                labelStyle={{ color: 'var(--text-primary)', fontWeight: '700' }}
+              />
+              <Legend wrapperStyle={{ fontSize: '12px', color: 'var(--text-secondary)' }} />
+              <Bar dataKey="matriculados" name="Matriculados" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="deserciones"  name="Deserciones"  fill="#EF4444" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </motion.div>
 
-        {/* Top 5 */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55, duration: 0.4 }}
-          style={{ background: 'var(--bg-surface)', borderRadius: '14px', border: '1px solid var(--border)', padding: '24px', boxShadow: 'var(--card-shadow)' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '20px' }}>Top 5 — Estudiantes con mejor rendimiento</h3>
-          {data.top5EstudiantesRendimiento.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No hay notas registradas aún.</p>
-          ) : (
+        {/* Tabla por carrera */}
+        {(data.porCarrera || []).length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.4 }}
+            style={{ background: 'var(--bg-surface)', borderRadius: '14px', border: '1px solid var(--border)', padding: '24px', boxShadow: 'var(--card-shadow)' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '20px' }}>
+              Matrículas por carrera — Periodo actual
+            </h3>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                  {['#', 'ID', 'Nombre', 'Promedio'].map(h => (
+                  {['Carrera', 'Matriculados', 'Deserciones', '% Deserción'].map(h => (
                     <th key={h} style={{ padding: '8px 12px', fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'left' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {data.top5EstudiantesRendimiento.map((est, i) => (
-                  <tr key={est.idEstudiante} style={{ borderBottom: '1px solid var(--border)' }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'var(--table-hover)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    <td style={{ padding: '12px 12px' }}>
-                      <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: rankColors[i] || 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '800', color: i < 3 ? '#000' : 'var(--text-primary)' }}>{i + 1}</div>
-                    </td>
-                    <td style={{ padding: '12px', fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{est.idEstudiante}</td>
-                    <td style={{ padding: '12px', fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{est.nombre}</td>
-                    <td style={{ padding: '12px' }}>
-                      <span style={{ padding: '4px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: '800', background: est.promedio >= 11 ? 'var(--success-bg)' : 'var(--danger-bg)', color: est.promedio >= 11 ? 'var(--success-text)' : 'var(--danger-text)' }}>
-                        {est.promedio}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {data.porCarrera.map((c, i) => {
+                  const tot  = c.matriculados + c.deserciones
+                  const tasa = tot > 0 ? ((c.deserciones / tot) * 100).toFixed(1) : '0.0'
+                  const alto = parseFloat(tasa) > 10
+                  return (
+                    <tr key={i} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.15s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--table-hover)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      <td style={{ padding: '12px', fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{c.carrera}</td>
+                      <td style={{ padding: '12px', fontSize: '13px', fontWeight: '700', color: 'var(--success-text)' }}>{c.matriculados}</td>
+                      <td style={{ padding: '12px', fontSize: '13px', fontWeight: '700', color: 'var(--danger-text)' }}>{c.deserciones}</td>
+                      <td style={{ padding: '12px' }}>
+                        <span style={{ padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', background: alto ? 'var(--danger-bg)' : 'var(--warning-bg)', color: alto ? 'var(--danger-text)' : 'var(--warning-text)' }}>{tasa}%</span>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
-          )}
-        </motion.div>
+          </motion.div>
+        )}
       </>}
     </PageShell>
   )

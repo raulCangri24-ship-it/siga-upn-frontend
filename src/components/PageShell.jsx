@@ -6,6 +6,7 @@ import SidebarAdmin from './SidebarAdmin'
 import SidebarDocente from './SidebarDocente'
 import SidebarEstudiante from './SidebarEstudiante'
 import SidebarCoordinador from './SidebarCoordinador'
+import SidebarRector from './SidebarRector'
 import { useTheme } from '../context/ThemeContext'
 
 const ROLE_LABELS = {
@@ -13,6 +14,7 @@ const ROLE_LABELS = {
   docente: 'Portal Docente',
   estudiante: 'Portal Estudiantil',
   coordinador: 'Portal Coordinador',
+  rector: 'Portal Rector',
 }
 
 const SIDEBARS = {
@@ -20,6 +22,7 @@ const SIDEBARS = {
   docente: SidebarDocente,
   estudiante: SidebarEstudiante,
   coordinador: SidebarCoordinador,
+  rector: SidebarRector,
 }
 
 function PageShell({ role = 'admin', navTitle, children }) {
