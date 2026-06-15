@@ -40,6 +40,7 @@ function PortalMatricula() {
   const [tipoMensaje, setTipoMensaje] = useState('success')
   const [cargando, setCargando] = useState(false)
   const [filtro, setFiltro] = useState('')
+  const [alternativasPor, setAlternativasPor] = useState({}) // idSeccion → [alternativas]
 
   useEffect(() => { cargarTodo() }, [])
 
@@ -69,8 +70,23 @@ function PortalMatricula() {
     try {
       await inscribir({ idMatricula: `MAT${Date.now().toString().slice(-10)}`, idEstudiante, idSeccion: seccion.idSeccion, idPeriodo: ID_PERIODO })
       mostrarMsg(`Inscripción confirmada en ${seccion.nombreCurso}`)
+      setAlternativasPor({})
       cargarTodo(); setTab('mis-matriculas')
-    } catch (err) { mostrarMsg(err.response?.data || 'Error al inscribirse', 'error') }
+    } catch (err) {
+      const errMsg = err.response?.data || 'Error al inscribirse'
+      mostrarMsg(errMsg, 'error')
+      // HU05-05: Si la sección está llena, mostrar alternativas del mismo curso
+      if (errMsg.toLowerCase().includes('lleno') || errMsg.toLowerCase().includes('cupos')) {
+        const alts = cursosDisponibles.filter(s =>
+          s.idCurso === seccion.idCurso &&
+          s.idSeccion !== seccion.idSeccion &&
+          s.cuposDisponibles > 0
+        )
+        if (alts.length > 0) {
+          setAlternativasPor(prev => ({ ...prev, [seccion.idSeccion]: alts }))
+        }
+      }
+    }
     finally { setCargando(false) }
   }
 
@@ -241,6 +257,31 @@ function PortalMatricula() {
                         >
                           {bloqueado ? 'Sin prerrequisito' : sinCupos ? 'Sin cupos' : '+ Inscribirse'}
                         </motion.button>
+
+                        {/* HU05-05: Secciones alternativas cuando esta sección está llena */}
+                        <AnimatePresence>
+                          {alternativasPor[c.idSeccion]?.length > 0 && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              style={{ marginTop: '12px', padding: '10px', borderRadius: '8px', background: 'var(--info-bg)', border: '1px solid rgba(59,130,246,0.25)' }}
+                            >
+                              <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--info-text)', marginBottom: '6px' }}>
+                                Secciones alternativas disponibles:
+                              </div>
+                              {alternativasPor[c.idSeccion].map(alt => (
+                                <motion.div key={alt.idSeccion} whileTap={{ scale: 0.97 }}
+                                  onClick={() => handleInscribir(alt)}
+                                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', borderRadius: '6px', cursor: 'pointer', marginBottom: '3px', background: 'rgba(59,130,246,0.08)' }}>
+                                  <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--accent-blue)' }}>{alt.codigo}</span>
+                                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{alt.horario}</span>
+                                  <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--success-text)' }}>{alt.cuposDisponibles} cupos</span>
+                                </motion.div>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     </motion.div>
                   )

@@ -96,6 +96,14 @@ function RegistroAsistencia() {
 
   const handlePublicarMaterial = async (e) => {
     e.preventDefault()
+    // HU09-05: Validar tamaño de archivo si se seleccionó uno
+    const archivoInput = e.target.querySelector('input[type="file"]')
+    if (archivoInput && archivoInput.files[0]) {
+      if (archivoInput.files[0].size > 10 * 1024 * 1024) {
+        mostrarMsg('El archivo excede el tamaño máximo permitido de 10MB', 'error')
+        return
+      }
+    }
     try {
       await publicarMaterial({ ...formMaterial, idMaterial: `MAT${Date.now().toString().slice(-10)}`, idSeccion: idSeccionSel, idDocente })
       mostrarMsg('Material publicado satisfactoriamente')
