@@ -26,9 +26,12 @@ function RutaProtegida({ children, rolRequerido }) {
   }
 
   // Verificar rol
-  if (rolRequerido && rol !== rolRequerido) {
-    return <Navigate to="/login" />
-  }
+    if (rolRequerido) {
+      const rolesPermitidos = Array.isArray(rolRequerido) ? rolRequerido : [rolRequerido]
+      if (!rolesPermitidos.includes(rol)) {
+        return <Navigate to="/login" />
+      }
+    }
 
   return (
     <ControlInactividad tiempoLimite={TIEMPO_INACTIVIDAD}>

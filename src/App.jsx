@@ -55,7 +55,7 @@ function App() {
       } />
 
       <Route path="/admin/programacion" element={
-        <RutaProtegida rolRequerido="ADMIN">
+        <RutaProtegida rolRequerido={["ADMIN", "COORDINADOR"]}>
           <ProgramacionClases />
         </RutaProtegida>
       } />
@@ -91,7 +91,7 @@ function App() {
       } />
 
       <Route path="/docente/actas" element={
-        <RutaProtegida rolRequerido="DOCENTE">
+        <RutaProtegida rolRequerido={["DOCENTE", "COORDINADOR"]}>
           <GestionActas />
         </RutaProtegida>
       } />
