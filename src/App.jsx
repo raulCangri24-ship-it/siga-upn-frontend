@@ -22,6 +22,7 @@ import DashboardDocenteAdmin from './pages/DashboardDocenteAdmin'
 import DashboardRector from './pages/DashboardRector'
 import MisCursos from './pages/MisCursos'
 import DashboardUnificado from './pages/DashboardUnificado'
+import DashboardCoordinador from './pages/DashboardCoordinador'
 
 function App() {
   return (
@@ -152,6 +153,12 @@ function App() {
       <Route path="/admin/dashboard" element={
         <RutaProtegida rolRequerido="ADMIN">
           <DashboardUnificado />
+        </RutaProtegida>
+      } />
+
+      <Route path="/coordinador/dashboard" element={
+        <RutaProtegida rolRequerido="COORDINADOR">
+          <DashboardCoordinador />
         </RutaProtegida>
       } />
 

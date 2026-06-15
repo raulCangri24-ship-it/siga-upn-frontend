@@ -31,6 +31,7 @@ function Login() {
       else if (rol === 'ESTUDIANTE') navigate('/dashboard/estudiante')
       else if (rol === 'DOCENTE') navigate('/dashboard/docente')
       else if (rol === 'RECTOR') navigate('/dashboard/rector')
+      else if (rol === 'COORDINADOR') navigate('/coordinador/dashboard')
       else navigate('/login')
     } catch (err) {
       setError(err.response?.data || 'Error al conectar con el servidor')

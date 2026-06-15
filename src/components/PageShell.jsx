@@ -5,18 +5,21 @@ import logoUpn from '../assets/logo-upn.png.png'
 import SidebarAdmin from './SidebarAdmin'
 import SidebarDocente from './SidebarDocente'
 import SidebarEstudiante from './SidebarEstudiante'
+import SidebarCoordinador from './SidebarCoordinador'
 import { useTheme } from '../context/ThemeContext'
 
 const ROLE_LABELS = {
   admin: 'Panel de Administración',
   docente: 'Portal Docente',
   estudiante: 'Portal Estudiantil',
+  coordinador: 'Portal Coordinador',
 }
 
 const SIDEBARS = {
   admin: SidebarAdmin,
   docente: SidebarDocente,
   estudiante: SidebarEstudiante,
+  coordinador: SidebarCoordinador,
 }
 
 function PageShell({ role = 'admin', navTitle, children }) {
