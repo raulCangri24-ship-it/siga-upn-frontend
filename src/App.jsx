@@ -25,6 +25,7 @@ import DashboardUnificado from './pages/DashboardUnificado'
 import DashboardCoordinador from './pages/DashboardCoordinador'
 import ProgramacionCoordinador from './pages/coordinador/ProgramacionCoordinador'
 import ActasCoordinador from './pages/coordinador/ActasCoordinador'
+import HorariosCoordinador from './pages/coordinador/HorariosCoordinador'
 
 function App() {
   return (
@@ -190,7 +191,7 @@ function App() {
 
       <Route path="/coordinador/horarios" element={
         <RutaProtegida rolRequerido={["ESTUDIANTE", "COORDINADOR"]}>
-          <Horarios />
+          <HorariosCoordinador />
         </RutaProtegida>
       } />
 

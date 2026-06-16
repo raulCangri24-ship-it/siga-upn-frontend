@@ -42,7 +42,11 @@ function RegistroEvaluaciones() {
         obtenerNotasSeccion(idSeccionSel)
       ])
       setSilabo(silaboRes.data || null)
-      setFilas(notasRes.data || [])
+      const datos = notasRes.data || []
+      const filasUnicas = datos.filter((fila, index, self) =>
+        index === self.findIndex(f => f.idEstudiante === fila.idEstudiante)
+      )
+      setFilas(filasUnicas)
       setEditando({})
     } catch {
       mostrarMsg('Error al cargar datos de la sección', 'error')

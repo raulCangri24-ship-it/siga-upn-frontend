@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, RefreshCw, Search, CheckSquare, Lock } from 'lucide-react'
+import { Plus, RefreshCw, Search, CheckSquare, Lock, Unlock } from 'lucide-react'
 import { listarDeudas, registrarDeuda, saldarDeuda } from '../services/deudaService'
 import { obtenerEstadoEstudiante } from '../services/sincronizacionService'
-import { bloquearEstudiante } from '../services/restriccionService'
+import { bloquearEstudiante, desbloquearEstudiante } from '../services/restriccionService'
+import { listarUsuarios } from '../services/usuarioService'
 import PageShell from '../components/PageShell'
 import Alert from '../components/ui/Alert'
 import Modal from '../components/ui/Modal'
@@ -25,6 +26,7 @@ const rowVar = {
 
 function GestionDeudas() {
   const [deudas, setDeudas] = useState([])
+  const [estudiantes, setEstudiantes] = useState([])
   const [filtro, setFiltro] = useState('')
   const [filtroEstado, setFiltroEstado] = useState('TODOS')
   const [mostrarForm, setMostrarForm] = useState(false)
@@ -36,11 +38,18 @@ function GestionDeudas() {
   const [syncCargando, setSyncCargando] = useState(false)
   const [modalError, setModalError] = useState(null)
 
-  useEffect(() => { cargar() }, [])
+  useEffect(() => { cargar(); cargarEstudiantes() }, [])
 
   const cargar = async () => {
     try { const res = await listarDeudas(); setDeudas(res.data) }
     catch { mostrarMsg('Error al cargar deudas', 'error') }
+  }
+
+  const cargarEstudiantes = async () => {
+    try {
+      const res = await listarUsuarios()
+      setEstudiantes((res.data || []).filter(u => u.rol === 'ESTUDIANTE'))
+    } catch {}
   }
 
   const mostrarMsg = (texto, tipo = 'success') => {
@@ -80,11 +89,14 @@ function GestionDeudas() {
     finally { setSyncCargando(false) }
   }
 
-  const handleSaldar = async (idDeuda, concepto) => {
+  const handleSaldar = async (idDeuda, concepto, idEstudiante) => {
     if (!window.confirm(`¿Marcar como PAGADA la deuda "${concepto}"?`)) return
     try {
       await saldarDeuda(idDeuda)
-      mostrarMsg('Deuda saldada — restricción levantada automáticamente'); cargar()
+      try { await desbloquearEstudiante(idDeuda) } catch {}
+      setSyncEstados(prev => ({ ...prev, [idEstudiante]: false }))
+      mostrarMsg('Deuda saldada — restricción levantada automáticamente')
+      cargar()
     } catch (err) { mostrarMsg(err.response?.data || 'Error al saldar deuda', 'error') }
   }
 
@@ -92,8 +104,20 @@ function GestionDeudas() {
     if (!window.confirm(`¿Bloquear al estudiante ${d.idEstudiante} por la deuda "${d.concepto}"?`)) return
     try {
       await bloquearEstudiante(d.idEstudiante, d.idDeuda)
+      setSyncEstados(prev => ({ ...prev, [d.idEstudiante]: true }))
       mostrarMsg('Estudiante bloqueado y notificado')
+      cargar()
     } catch (err) { mostrarMsg(err.response?.data || 'Error al bloquear estudiante', 'error') }
+  }
+
+  const handleDesbloquear = async (d) => {
+    if (!window.confirm(`¿Levantar el bloqueo del estudiante ${d.idEstudiante}?`)) return
+    try {
+      await desbloquearEstudiante(d.idDeuda)
+      setSyncEstados(prev => ({ ...prev, [d.idEstudiante]: false }))
+      mostrarMsg('Bloqueo levantado y estudiante notificado')
+      cargar()
+    } catch (err) { mostrarMsg(err.response?.data || 'Error al desbloquear estudiante', 'error') }
   }
 
   const deudaFiltradas = deudas.filter(d => {
@@ -122,7 +146,6 @@ function GestionDeudas() {
     </div>
   )
 
-  // Stats
   const vencidas = deudas.filter(d => d.estado === 'VENCIDA').length
   const pendientes = deudas.filter(d => d.estado === 'PENDIENTE').length
   const pagadas = deudas.filter(d => d.estado === 'PAGADA').length
@@ -181,6 +204,7 @@ function GestionDeudas() {
                 <tr><td colSpan={7} style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>No se encontraron deudas</td></tr>
               ) : deudaFiltradas.map((d, i) => {
                 const badge = BADGE_DEUDA[d.estado] || BADGE_DEUDA.PENDIENTE
+                const bloqueado = syncEstados[d.idEstudiante] === true
                 return (
                   <motion.tr key={d.idDeuda} custom={i} variants={rowVar} initial="hidden" animate="visible"
                     style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.15s' }}
@@ -188,13 +212,18 @@ function GestionDeudas() {
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   >
                     <td style={{ padding: '12px 16px', fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{d.idDeuda}</td>
-                    <td style={{ padding: '12px 16px', fontSize: '12px', color: 'var(--text-secondary)' }}>{d.idEstudiante}</td>
+                    <td style={{ padding: '12px 16px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                      <div>{d.idEstudiante}</div>
+                      {bloqueado && (
+                        <div style={{ fontSize: '10px', color: 'var(--danger-text)', fontWeight: '700', marginTop: '2px' }}>🔒 BLOQUEADO</div>
+                      )}
+                    </td>
                     <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-primary)', maxWidth: '200px' }}>{d.concepto}</td>
                     <td style={{ padding: '12px 16px', fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>S/ {parseFloat(d.monto).toFixed(2)}</td>
                     <td style={{ padding: '12px 16px', fontSize: '12px', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>{formatFecha(d.fechaVencimiento)}</td>
                     <td style={{ padding: '12px 16px' }}>
                       <span style={{ padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', background: badge.bg, color: badge.color }}>{d.estado}</span>
-                      {d.estado === 'VENCIDA' && syncEstados[d.idEstudiante] !== undefined && (
+                      {d.estado !== 'VENCIDA' && syncEstados[d.idEstudiante] !== undefined && (
                         <div style={{ fontSize: '10px', marginTop: '3px', color: syncEstados[d.idEstudiante] ? 'var(--success-text)' : 'var(--warning-text)' }}>
                           {syncEstados[d.idEstudiante] ? '✓ Restringido' : '⚠ Sin restricción'}
                         </div>
@@ -203,14 +232,20 @@ function GestionDeudas() {
                     <td style={{ padding: '12px 16px' }}>
                       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                         {d.estado !== 'PAGADA' && (
-                          <button onClick={() => handleSaldar(d.idDeuda, d.concepto)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '7px', background: 'var(--success-bg)', color: 'var(--success-text)', border: '1px solid rgba(16,185,129,0.2)', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                          <button onClick={() => handleSaldar(d.idDeuda, d.concepto, d.idEstudiante)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '7px', background: 'var(--success-bg)', color: 'var(--success-text)', border: '1px solid rgba(16,185,129,0.2)', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
                             <CheckSquare size={12} /> Saldar
                           </button>
                         )}
                         {(d.estado === 'PENDIENTE' || d.estado === 'VENCIDA') && (
-                          <button onClick={() => handleBloquear(d)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '7px', background: 'var(--danger-bg)', color: 'var(--danger-text)', border: '1px solid rgba(239,68,68,0.2)', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
-                            <Lock size={12} /> Bloquear
-                          </button>
+                          bloqueado ? (
+                            <button onClick={() => handleDesbloquear(d)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '7px', background: 'var(--warning-bg)', color: 'var(--warning-text)', border: '1px solid rgba(245,158,11,0.2)', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                              <Unlock size={12} /> Desbloquear
+                            </button>
+                          ) : (
+                            <button onClick={() => handleBloquear(d)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '7px', background: 'var(--danger-bg)', color: 'var(--danger-text)', border: '1px solid rgba(239,68,68,0.2)', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                              <Lock size={12} /> Bloquear
+                            </button>
+                          )
                         )}
                       </div>
                     </td>
@@ -226,8 +261,15 @@ function GestionDeudas() {
       <Modal open={mostrarForm} onClose={() => { setMostrarForm(false); setModalError(null) }} title="Registrar nueva deuda">
         <form onSubmit={handleGuardar}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div>{field('ID DEUDA', <input value={form.idDeuda} readOnly style={{ background: 'var(--bg-elevated)', cursor: 'default', opacity: 0.8 }} />)}</div>
-            <div>{field('ID ESTUDIANTE', <input value={form.idEstudiante} onChange={e => setForm({...form, idEstudiante: e.target.value})} placeholder="Ej: USR003" required maxLength={15} />)}</div>
+            <div>{field('ID DEUDA', <input value={form.idDeuda} readOnly style={{ background: 'var(--bg-elevated)', cursor: 'default', opacity: 0.8, fontFamily: 'monospace' }} />)}</div>
+            <div>{field('ESTUDIANTE',
+              <select value={form.idEstudiante} onChange={e => setForm({...form, idEstudiante: e.target.value})} required>
+                <option value="">Seleccionar estudiante...</option>
+                {estudiantes.map(u => (
+                  <option key={u.idUsuario} value={u.idUsuario}>{u.idUsuario} — {u.nombre} {u.apellido}</option>
+                ))}
+              </select>
+            )}</div>
           </div>
           {field('CONCEPTO', <input value={form.concepto} onChange={e => setForm({...form, concepto: e.target.value})} placeholder="Ej: Pensión Mayo 2026" required maxLength={150} />)}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>

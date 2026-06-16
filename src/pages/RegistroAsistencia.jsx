@@ -115,7 +115,7 @@ function RegistroAsistencia() {
     }
     try {
       await publicarMaterial({ ...formMaterial, idMaterial: `MAT${Date.now().toString().slice(-10)}`, idSeccion: idSeccionSel, idDocente })
-      mostrarMsg('Material publicado satisfactoriamente')
+      mostrarMsg('Material publicado correctamente')
       setFormMaterial({ idMaterial: '', titulo: '', tipo: 'DOCUMENTO', url: '' })
       setArchivoSel(null)
       setMostrarFormMaterial(false)
