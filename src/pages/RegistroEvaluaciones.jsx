@@ -88,6 +88,7 @@ function RegistroEvaluaciones() {
           const mensajeError = err.response?.data || 'Error al guardar nota'
           const esPlazo = typeof mensajeError === 'string' && (mensajeError.includes('Plazo vencido') || mensajeError.includes('coordinador'))
           mostrarMsg(mensajeError, esPlazo ? 'warning' : 'error')
+          cargarDatos()
           setGuardando(false)
           return
         }
