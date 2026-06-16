@@ -34,6 +34,7 @@ function GestionDeudas() {
   const [cargando, setCargando] = useState(false)
   const [syncEstados, setSyncEstados] = useState({})
   const [syncCargando, setSyncCargando] = useState(false)
+  const [modalError, setModalError] = useState(null)
 
   useEffect(() => { cargar() }, [])
 
@@ -46,13 +47,22 @@ function GestionDeudas() {
     setMensaje(texto); setTipoMensaje(tipo); setTimeout(() => setMensaje(null), 4000)
   }
 
+  const abrirNuevaDeuda = () => {
+    const nums = deudas.map(d => parseInt(d.idDeuda?.replace('DEU', '')) || 0).filter(n => n > 0)
+    const nextNum = nums.length > 0 ? Math.max(...nums) + 1 : 1
+    const nuevoId = `DEU${String(nextNum).padStart(3, '0')}`
+    setForm({ ...FORM_INICIAL, idDeuda: nuevoId })
+    setModalError(null)
+    setMostrarForm(true)
+  }
+
   const handleGuardar = async (e) => {
-    e.preventDefault(); setCargando(true)
+    e.preventDefault(); setCargando(true); setModalError(null)
     try {
       await registrarDeuda({ ...form, monto: parseFloat(form.monto) })
       mostrarMsg('Deuda registrada satisfactoriamente')
       setMostrarForm(false); setForm(FORM_INICIAL); cargar()
-    } catch (err) { mostrarMsg(err.response?.data || 'Error al registrar deuda', 'error') }
+    } catch (err) { setModalError(err.response?.data || 'Error al registrar deuda') }
     finally { setCargando(false) }
   }
 
@@ -125,7 +135,7 @@ function GestionDeudas() {
         <button onClick={verificarSync} disabled={syncCargando} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 13px', borderRadius: '8px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
           <RefreshCw size={13} className={syncCargando ? 'spin' : ''} /> {syncCargando ? 'Verificando...' : 'Verificar sync'}
         </button>
-        <button onClick={() => { setForm(FORM_INICIAL); setMostrarForm(true) }} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 13px', borderRadius: '8px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+        <button onClick={abrirNuevaDeuda} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 13px', borderRadius: '8px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
           <Plus size={13} /> Nueva deuda
         </button>
       </PageHeader>
@@ -213,10 +223,10 @@ function GestionDeudas() {
       </div>
 
       {/* Modal */}
-      <Modal open={mostrarForm} onClose={() => setMostrarForm(false)} title="Registrar nueva deuda">
+      <Modal open={mostrarForm} onClose={() => { setMostrarForm(false); setModalError(null) }} title="Registrar nueva deuda">
         <form onSubmit={handleGuardar}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div>{field('ID DEUDA', <input value={form.idDeuda} onChange={e => setForm({...form, idDeuda: e.target.value})} placeholder="Ej: DEU002" required maxLength={15} />)}</div>
+            <div>{field('ID DEUDA', <input value={form.idDeuda} readOnly style={{ background: 'var(--bg-elevated)', cursor: 'default', opacity: 0.8 }} />)}</div>
             <div>{field('ID ESTUDIANTE', <input value={form.idEstudiante} onChange={e => setForm({...form, idEstudiante: e.target.value})} placeholder="Ej: USR003" required maxLength={15} />)}</div>
           </div>
           {field('CONCEPTO', <input value={form.concepto} onChange={e => setForm({...form, concepto: e.target.value})} placeholder="Ej: Pensión Mayo 2026" required maxLength={150} />)}
@@ -232,11 +242,16 @@ function GestionDeudas() {
             </select>,
             form.estado === 'VENCIDA' ? '⚠ Se creará una restricción de matrícula automáticamente.' : null
           )}
+          {modalError && (
+            <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'var(--danger-bg)', color: 'var(--danger-text)', fontSize: '12px', fontWeight: '600', marginBottom: '4px', border: '1px solid rgba(239,68,68,0.2)' }}>
+              {modalError}
+            </div>
+          )}
           <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
             <button type="submit" disabled={cargando} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}>
               {cargando ? 'Registrando...' : 'Registrar deuda'}
             </button>
-            <button type="button" onClick={() => setMostrarForm(false)} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>
+            <button type="button" onClick={() => { setMostrarForm(false); setModalError(null) }} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>
               Cancelar
             </button>
           </div>

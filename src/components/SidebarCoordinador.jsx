@@ -1,13 +1,15 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Home, CalendarDays, FileText } from 'lucide-react'
+import { Home, CalendarDays, FileText, BarChart2, Clock } from 'lucide-react'
 import logoUpn from '../assets/logo-upn.png.png'
 import { useTheme } from '../context/ThemeContext'
 
 const menuItems = [
-  { label: 'Dashboard',    ruta: '/coordinador/dashboard',     Icon: Home },
-  { label: 'Programación', ruta: '/coordinador/programacion',  Icon: CalendarDays },
-  { label: 'Actas',        ruta: '/coordinador/actas',         Icon: FileText },
+  { label: 'Dashboard',          ruta: '/coordinador/dashboard',    Icon: Home },
+  { label: 'Programación',       ruta: '/coordinador/programacion', Icon: CalendarDays },
+  { label: 'Actas',              ruta: '/coordinador/actas',        Icon: FileText },
+  { label: 'Dashboard Estudiantil', ruta: '/coordinador/estudiantil', Icon: BarChart2 },
+  { label: 'Horarios',           ruta: '/coordinador/horarios',     Icon: Clock },
 ]
 
 const BRAND_COLOR = '#F5AD27'

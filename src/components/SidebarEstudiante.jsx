@@ -16,8 +16,13 @@ const menuItems = [
 ]
 
 const TIPO_COLOR = {
-  BLOQUEO:   { bg: 'var(--danger-bg)',  color: 'var(--danger-text)' },
+  BLOQUEO:    { bg: 'var(--danger-bg)',  color: 'var(--danger-text)' },
   DESBLOQUEO: { bg: 'var(--success-bg)', color: 'var(--success-text)' },
+}
+
+const TIPO_ICON = {
+  BLOQUEO:    '🔒',
+  DESBLOQUEO: '🔓',
 }
 
 function SidebarEstudiante() {
@@ -176,7 +181,7 @@ function SidebarEstudiante() {
                         {!n.leida && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#F5AD27', marginTop: '5px', flexShrink: 0 }} />}
                         <div style={{ flex: 1 }}>
                           <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: '700', background: c.bg, color: c.color, marginBottom: '4px' }}>
-                            {n.tipo}
+                            {TIPO_ICON[n.tipo] ? `${TIPO_ICON[n.tipo]} ${n.tipo}` : n.tipo}
                           </span>
                           <p style={{ margin: 0, fontSize: '12px', color: brandText, lineHeight: 1.4 }}>{n.mensaje}</p>
                           <span style={{ fontSize: '10px', color: menuInactiveIcon, marginTop: '3px', display: 'block' }}>{n.fecha}</span>

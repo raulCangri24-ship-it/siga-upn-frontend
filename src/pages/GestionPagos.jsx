@@ -9,7 +9,8 @@ import Alert from '../components/ui/Alert'
 import Modal from '../components/ui/Modal'
 import PageHeader from '../components/ui/PageHeader'
 
-const FORM_INICIAL = { idEstudiante: '', idDeuda: '', monto: '', concepto: '' }
+const genIdPago = () => `PAG${String(Date.now() % 100000).padStart(5, '0')}`
+const FORM_INICIAL = { idPago: genIdPago(), idEstudiante: '', idDeuda: '', monto: '', concepto: '' }
 const PLAN_INICIAL = { idDeuda: '', numeroCuotas: 2, fechaInicio: '' }
 
 const BADGE_PAGO = {
@@ -119,7 +120,7 @@ function GestionPagos() {
         <button onClick={() => { setPlanForm(PLAN_INICIAL); setMostrarPlan(true) }} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 13px', borderRadius: '8px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
           <CreditCard size={13} /> Plan de pagos
         </button>
-        <button onClick={() => { setForm(FORM_INICIAL); setMostrarForm(true) }} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 13px', borderRadius: '8px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+        <button onClick={() => { setForm({ ...FORM_INICIAL, idPago: genIdPago() }); setMostrarForm(true) }} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 13px', borderRadius: '8px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
           <Plus size={13} /> Registrar pago
         </button>
       </PageHeader>
@@ -209,6 +210,7 @@ function GestionPagos() {
       {/* Modal registrar pago */}
       <Modal open={mostrarForm} onClose={() => setMostrarForm(false)} title="Registrar nuevo pago">
         <form onSubmit={handleRegistrar}>
+          {field('ID PAGO', <input value={form.idPago} readOnly style={{ background: 'var(--bg-elevated)', cursor: 'default', opacity: 0.8, fontFamily: 'monospace' }} />)}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>{field('ID ESTUDIANTE', <input value={form.idEstudiante} onChange={e => setForm({...form, idEstudiante: e.target.value})} placeholder="Ej: USR003" required maxLength={15} />)}</div>
             <div>{field('ID DEUDA',

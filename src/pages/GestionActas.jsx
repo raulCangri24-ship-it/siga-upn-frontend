@@ -31,6 +31,7 @@ function GestionActas() {
   const [tipoMensaje, setTipoMensaje] = useState('success')
   const [cargando, setCargando] = useState(false)
   const [filtroEstado, setFiltroEstado] = useState('TODOS')
+  const [modalError, setModalError] = useState(null)
 
   useEffect(() => {
     cargar()
@@ -59,13 +60,14 @@ function GestionActas() {
     e.preventDefault()
     if (!idSeccionForm) return
     setCargando(true)
+    setModalError(null)
     try {
       await generarActa(idSeccionForm, idDocente)
       mostrarMsg('Acta generada satisfactoriamente en estado BORRADOR')
       setMostrarForm(false)
       cargar()
     } catch (err) {
-      mostrarMsg(err.response?.data || 'Error al generar acta', 'error')
+      setModalError(err.response?.data || 'Error al generar acta')
     } finally {
       setCargando(false)
     }
@@ -170,7 +172,7 @@ function GestionActas() {
       </div>
 
       {/* Modal generar acta */}
-      <Modal open={mostrarForm} onClose={() => setMostrarForm(false)} title="Generar nueva acta" width="460px">
+      <Modal open={mostrarForm} onClose={() => { setMostrarForm(false); setModalError(null) }} title="Generar nueva acta" width="460px">
         <form onSubmit={handleGenerar}>
           {field('Sección',
             secciones.length > 0
@@ -182,11 +184,16 @@ function GestionActas() {
           <div style={{ padding: '12px 16px', borderRadius: '10px', background: 'var(--info-bg)', color: 'var(--info-text)', fontSize: '12px', marginBottom: '16px', lineHeight: 1.6 }}>
             Se generará un acta en estado <strong>BORRADOR</strong>. Una vez firmada, no podrá modificarse y se actualizará el historial académico.
           </div>
+          {modalError && (
+            <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'var(--danger-bg)', color: 'var(--danger-text)', fontSize: '12px', fontWeight: '600', marginBottom: '14px', border: '1px solid rgba(239,68,68,0.2)' }}>
+              {modalError}
+            </div>
+          )}
           <div style={{ display: 'flex', gap: '10px' }}>
             <button type="submit" disabled={cargando} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}>
               {cargando ? 'Generando...' : 'Generar acta'}
             </button>
-            <button type="button" onClick={() => setMostrarForm(false)} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>
+            <button type="button" onClick={() => { setMostrarForm(false); setModalError(null) }} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>
               Cancelar
             </button>
           </div>

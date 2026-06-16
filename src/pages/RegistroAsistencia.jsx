@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CheckSquare, BookOpen, Plus, ExternalLink, Trash2, Calendar, Monitor, Users } from 'lucide-react'
 import { registrarAsistencia, listarAsistenciaPorFecha } from '../services/asistenciaService'
 import { listarMateriales, publicarMaterial, eliminarMaterial } from '../services/asistenciaService'
-import { listarSecciones } from '../services/seccionService'
+import { obtenerSeccionesDocente, obtenerNotasSeccion } from '../services/evaluacionService'
 import PageShell from '../components/PageShell'
 import Alert from '../components/ui/Alert'
 import Modal from '../components/ui/Modal'
@@ -26,6 +26,9 @@ const TIPO_COLORS = {
   DOCUMENTO:    { bg: 'rgba(16,185,129,0.12)', color: '#34D399', border: 'rgba(16,185,129,0.2)' },
 }
 
+const MAX_FILE_MB = 10
+const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024
+
 function RegistroAsistencia() {
   const idDocente = localStorage.getItem('idUsuario')
 
@@ -41,6 +44,7 @@ function RegistroAsistencia() {
   const [cargando, setCargando] = useState(false)
   const [formMaterial, setFormMaterial] = useState({ idMaterial: '', titulo: '', tipo: 'DOCUMENTO', url: '' })
   const [mostrarFormMaterial, setMostrarFormMaterial] = useState(false)
+  const [archivoSel, setArchivoSel] = useState(null)
 
   useEffect(() => { cargarSecciones() }, [])
   useEffect(() => {
@@ -49,7 +53,7 @@ function RegistroAsistencia() {
 
   const cargarSecciones = async () => {
     try {
-      const res = await listarSecciones()
+      const res = await obtenerSeccionesDocente(idDocente)
       setSecciones(res.data)
       if (res.data.length > 0) setIdSeccionSel(res.data[0].idSeccion)
     } catch { mostrarMsg('Error al cargar secciones', 'error') }
@@ -61,11 +65,9 @@ function RegistroAsistencia() {
       if (res.data.length > 0) {
         setRegistros(res.data.map(a => ({ idEstudiante: a.idEstudiante, nombreEstudiante: a.nombreEstudiante, estado: a.estado })))
       } else {
-        setRegistros([
-          { idEstudiante: 'USR003', nombreEstudiante: 'Carlos Mendez', estado: 'PRESENTE' },
-          { idEstudiante: 'USR004', nombreEstudiante: 'Ana Torres', estado: 'PRESENTE' },
-          { idEstudiante: 'USR005', nombreEstudiante: 'Luis Flores', estado: 'PRESENTE' },
-        ])
+        const notasRes = await obtenerNotasSeccion(idSeccionSel)
+        const estudiantes = (notasRes.data || []).map(r => ({ idEstudiante: r.idEstudiante, nombreEstudiante: r.nombreEstudiante, estado: 'PRESENTE' }))
+        setRegistros(estudiantes)
       }
     } catch { mostrarMsg('Error al cargar asistencia', 'error') }
   }
@@ -94,13 +96,20 @@ function RegistroAsistencia() {
     finally { setCargando(false) }
   }
 
+  const esArchivoTipo = (tipo) => tipo === 'DOCUMENTO' || tipo === 'PRESENTACION'
+
+  const handleArchivoChange = (e) => {
+    const file = e.target.files[0]
+    if (!file) { setArchivoSel(null); return }
+    setArchivoSel(file)
+    setFormMaterial(prev => ({ ...prev, url: file.name }))
+  }
+
   const handlePublicarMaterial = async (e) => {
     e.preventDefault()
-    // HU09-05: Validar tamaño de archivo si se seleccionó uno
-    const archivoInput = e.target.querySelector('input[type="file"]')
-    if (archivoInput && archivoInput.files[0]) {
-      if (archivoInput.files[0].size > 10 * 1024 * 1024) {
-        mostrarMsg('El archivo excede el tamaño máximo permitido de 10MB', 'error')
+    if (esArchivoTipo(formMaterial.tipo) && archivoSel) {
+      if (archivoSel.size > MAX_FILE_BYTES) {
+        mostrarMsg(`El archivo excede el tamaño máximo de ${MAX_FILE_MB}MB`, 'error')
         return
       }
     }
@@ -108,6 +117,7 @@ function RegistroAsistencia() {
       await publicarMaterial({ ...formMaterial, idMaterial: `MAT${Date.now().toString().slice(-10)}`, idSeccion: idSeccionSel, idDocente })
       mostrarMsg('Material publicado satisfactoriamente')
       setFormMaterial({ idMaterial: '', titulo: '', tipo: 'DOCUMENTO', url: '' })
+      setArchivoSel(null)
       setMostrarFormMaterial(false)
       cargarMateriales()
     } catch { mostrarMsg('Error al publicar material', 'error') }
@@ -118,6 +128,10 @@ function RegistroAsistencia() {
     try { await eliminarMaterial(id); mostrarMsg('Material eliminado'); cargarMateriales() }
     catch { mostrarMsg('Error al eliminar material', 'error') }
   }
+
+  const fileSizePct = archivoSel ? Math.min((archivoSel.size / MAX_FILE_BYTES) * 100, 100) : 0
+  const fileOverLimit = archivoSel && archivoSel.size > MAX_FILE_BYTES
+  const fileSizeKB = archivoSel ? (archivoSel.size / 1024).toFixed(1) : 0
 
   return (
     <PageShell role="docente" navTitle="Asistencia y Materiales">
@@ -147,7 +161,7 @@ function RegistroAsistencia() {
           style={{ minWidth: '220px', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}
         >
           {secciones.map(s => (
-            <option key={s.idSeccion} value={s.idSeccion}>{s.codigo} — {s.curso}</option>
+            <option key={s.idSeccion} value={s.idSeccion}>{s.codigo} — {s.idSeccion}</option>
           ))}
         </select>
       </motion.div>
@@ -225,59 +239,66 @@ function RegistroAsistencia() {
               })}
             </div>
 
-            <div style={{ background: 'var(--bg-surface)', borderRadius: '16px', border: '1px solid var(--border)', overflow: 'hidden', boxShadow: 'var(--card-shadow)', marginBottom: '20px' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: 'var(--table-header)', borderBottom: '2px solid var(--border)' }}>
-                    <th style={{ padding: '14px 18px', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', textAlign: 'left', width: '50px' }}>#</th>
-                    <th style={{ padding: '14px 18px', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', textAlign: 'left' }}>Estudiante</th>
-                    {ESTADOS.map(e => (
-                      <th key={e} style={{ padding: '14px 18px', fontSize: '11px', fontWeight: '700', color: ESTADO_CONFIG[e].color, textTransform: 'uppercase', letterSpacing: '0.8px', textAlign: 'center' }}>
-                        {ESTADO_CONFIG[e].label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {registros.map((r, i) => (
-                    <motion.tr key={r.idEstudiante}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      style={{ borderBottom: '1px solid var(--border)' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'var(--table-hover)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                    >
-                      <td style={{ padding: '14px 18px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>{i + 1}</td>
-                      <td style={{ padding: '14px 18px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #7C3AED, #2563EB)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '700', color: '#fff', flexShrink: 0 }}>
-                            {r.nombreEstudiante.charAt(0)}
+            {registros.length === 0 ? (
+              <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', background: 'var(--bg-surface)', borderRadius: '14px', border: '1px dashed var(--border)', marginBottom: '20px' }}>
+                <div style={{ fontSize: '36px', marginBottom: '10px' }}>👥</div>
+                <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>Sin estudiantes matriculados en esta sección</div>
+              </div>
+            ) : (
+              <div style={{ background: 'var(--bg-surface)', borderRadius: '16px', border: '1px solid var(--border)', overflow: 'hidden', boxShadow: 'var(--card-shadow)', marginBottom: '20px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ background: 'var(--table-header)', borderBottom: '2px solid var(--border)' }}>
+                      <th style={{ padding: '14px 18px', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', textAlign: 'left', width: '50px' }}>#</th>
+                      <th style={{ padding: '14px 18px', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', textAlign: 'left' }}>Estudiante</th>
+                      {ESTADOS.map(e => (
+                        <th key={e} style={{ padding: '14px 18px', fontSize: '11px', fontWeight: '700', color: ESTADO_CONFIG[e].color, textTransform: 'uppercase', letterSpacing: '0.8px', textAlign: 'center' }}>
+                          {ESTADO_CONFIG[e].label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {registros.map((r, i) => (
+                      <motion.tr key={r.idEstudiante}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        style={{ borderBottom: '1px solid var(--border)' }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'var(--table-hover)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <td style={{ padding: '14px 18px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>{i + 1}</td>
+                        <td style={{ padding: '14px 18px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #7C3AED, #2563EB)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '700', color: '#fff', flexShrink: 0 }}>
+                              {r.nombreEstudiante.charAt(0)}
+                            </div>
+                            <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{r.nombreEstudiante}</span>
                           </div>
-                          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{r.nombreEstudiante}</span>
-                        </div>
-                      </td>
-                      {ESTADOS.map(estado => {
-                        const cfg = ESTADO_CONFIG[estado]
-                        const active = r.estado === estado
-                        return (
-                          <td key={estado} style={{ padding: '14px 18px', textAlign: 'center' }}>
-                            <motion.button whileTap={{ scale: 0.85 }} whileHover={{ scale: 1.1 }}
-                              onClick={() => handleEstado(r.idEstudiante, estado)}
-                              style={{ width: '32px', height: '32px', borderRadius: '50%', border: active ? `2px solid ${cfg.color}` : '2px solid var(--border)', background: active ? cfg.bg : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', transition: 'all 0.15s' }}>
-                              {active && (
-                                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}
-                                  style={{ width: '14px', height: '14px', borderRadius: '50%', background: cfg.color }} />
-                              )}
-                            </motion.button>
-                          </td>
-                        )
-                      })}
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                        </td>
+                        {ESTADOS.map(estado => {
+                          const cfg = ESTADO_CONFIG[estado]
+                          const active = r.estado === estado
+                          return (
+                            <td key={estado} style={{ padding: '14px 18px', textAlign: 'center' }}>
+                              <motion.button whileTap={{ scale: 0.85 }} whileHover={{ scale: 1.1 }}
+                                onClick={() => handleEstado(r.idEstudiante, estado)}
+                                style={{ width: '32px', height: '32px', borderRadius: '50%', border: active ? `2px solid ${cfg.color}` : '2px solid var(--border)', background: active ? cfg.bg : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', transition: 'all 0.15s' }}>
+                                {active && (
+                                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}
+                                    style={{ width: '14px', height: '14px', borderRadius: '50%', background: cfg.color }} />
+                                )}
+                              </motion.button>
+                            </td>
+                          )
+                        })}
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
             <motion.button whileTap={{ scale: 0.97 }} whileHover={{ opacity: 0.9 }}
               onClick={handleGuardarAsistencia}
@@ -309,7 +330,7 @@ function RegistroAsistencia() {
                 </p>
               </div>
               <motion.button whileTap={{ scale: 0.97 }} whileHover={{ opacity: 0.9 }}
-                onClick={() => setMostrarFormMaterial(true)}
+                onClick={() => { setFormMaterial({ idMaterial: '', titulo: '', tipo: 'DOCUMENTO', url: '' }); setArchivoSel(null); setMostrarFormMaterial(true) }}
                 style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '10px 18px', borderRadius: '10px', background: 'linear-gradient(135deg, #2563EB, #7C3AED)', color: '#fff', border: 'none', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}>
                 <Plus size={14} /> Publicar material
               </motion.button>
@@ -321,7 +342,7 @@ function RegistroAsistencia() {
                 <div style={{ fontSize: '48px', marginBottom: '16px' }}>📂</div>
                 <div style={{ fontSize: '15px', fontWeight: '700', marginBottom: '6px', color: 'var(--text-secondary)' }}>Sin materiales publicados</div>
                 <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>Publica recursos para que tus estudiantes puedan acceder al material del curso</div>
-                <motion.button whileTap={{ scale: 0.97 }} onClick={() => setMostrarFormMaterial(true)}
+                <motion.button whileTap={{ scale: 0.97 }} onClick={() => { setFormMaterial({ idMaterial: '', titulo: '', tipo: 'DOCUMENTO', url: '' }); setArchivoSel(null); setMostrarFormMaterial(true) }}
                   style={{ padding: '9px 20px', borderRadius: '9px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
                   + Publicar primer material
                 </motion.button>
@@ -338,32 +359,7 @@ function RegistroAsistencia() {
                       whileHover={{ y: -4, transition: { duration: 0.2 } }}
                       style={{ background: 'var(--bg-surface)', borderRadius: '16px', border: '1px solid var(--border)', overflow: 'hidden', boxShadow: 'var(--card-shadow)', position: 'relative' }}
                     >
-                      {/* Shimmer animado */}
-                      <style>{`
-                        @keyframes shimmer {
-                          0%   { background-position: -200% 0; }
-                          100% { background-position: 200% 0; }
-                        }
-                      `}</style>
-
-                      {/* Barra superior con shimmer */}
-                      <div style={{ height: '4px', position: 'relative', overflow: 'hidden', background: `linear-gradient(90deg, ${tc.color}40, ${tc.color}, ${tc.color}40)` }}>
-                        <div style={{
-                          position: 'absolute', inset: 0,
-                          background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.4) 50%, transparent 70%)',
-                          backgroundSize: '200% 100%',
-                          animation: 'shimmer 2s ease infinite',
-                        }} />
-                      </div>
-
-                      {/* Glow de fondo sutil */}
-                      <div style={{
-                        position: 'absolute', top: 0, left: 0,
-                        width: '100%', height: '100%',
-                        background: `radial-gradient(ellipse at top left, ${tc.color}08 0%, transparent 60%)`,
-                        pointerEvents: 'none',
-                      }} />
-
+                      <div style={{ height: '4px', position: 'relative', overflow: 'hidden', background: `linear-gradient(90deg, ${tc.color}40, ${tc.color}, ${tc.color}40)` }} />
                       <div style={{ padding: '20px', position: 'relative', zIndex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '14px' }}>
                           <div style={{ width: '46px', height: '46px', borderRadius: '12px', background: tc.bg, border: `1px solid ${tc.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>
@@ -373,15 +369,10 @@ function RegistroAsistencia() {
                             {m.tipo}
                           </div>
                         </div>
-
-                        <h4 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', margin: '0 0 6px 0', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                          {m.titulo}
-                        </h4>
-
+                        <h4 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', margin: '0 0 6px 0', lineHeight: 1.4 }}>{m.titulo}</h4>
                         <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <Calendar size={10} /> {m.fechaPublicacion}
                         </div>
-
                         <div style={{ display: 'flex', gap: '8px' }}>
                           {m.url && (
                             <a href={m.url} target="_blank" rel="noreferrer"
@@ -406,7 +397,7 @@ function RegistroAsistencia() {
       </AnimatePresence>
 
       {/* Modal material */}
-      <Modal open={mostrarFormMaterial} onClose={() => setMostrarFormMaterial(false)} title="Publicar material" width="440px">
+      <Modal open={mostrarFormMaterial} onClose={() => { setMostrarFormMaterial(false); setArchivoSel(null) }} title="Publicar material" width="440px">
         <form onSubmit={handlePublicarMaterial}>
           <div style={{ marginBottom: '14px' }}>
             <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Título</label>
@@ -414,20 +405,52 @@ function RegistroAsistencia() {
           </div>
           <div style={{ marginBottom: '14px' }}>
             <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Tipo</label>
-            <select value={formMaterial.tipo} onChange={e => setFormMaterial({...formMaterial, tipo: e.target.value})}>
+            <select value={formMaterial.tipo} onChange={e => { setFormMaterial({...formMaterial, tipo: e.target.value, url: ''}); setArchivoSel(null) }}>
               <option value="DOCUMENTO">Documento</option>
+              <option value="PRESENTACION">Presentación</option>
               <option value="VIDEO">Video</option>
               <option value="ENLACE">Enlace</option>
-              <option value="PRESENTACION">Presentación</option>
             </select>
           </div>
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>URL</label>
-            <input value={formMaterial.url} onChange={e => setFormMaterial({...formMaterial, url: e.target.value})} placeholder="https://..." />
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>
+              {esArchivoTipo(formMaterial.tipo) ? 'ARCHIVO (máx. 10MB)' : 'URL'}
+            </label>
+            {esArchivoTipo(formMaterial.tipo) ? (
+              <>
+                <input type="file" onChange={handleArchivoChange}
+                  accept={formMaterial.tipo === 'DOCUMENTO' ? '.pdf,.doc,.docx,.txt' : '.ppt,.pptx,.pdf'}
+                  style={{ padding: '8px', cursor: 'pointer' }} />
+                {archivoSel && (
+                  <div style={{ marginTop: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
+                      <span style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>{archivoSel.name}</span>
+                      <span style={{ color: fileOverLimit ? 'var(--danger-text)' : 'var(--success-text)', fontWeight: '700' }}>
+                        {fileSizeKB} KB {fileOverLimit ? `(máx. ${MAX_FILE_MB}MB)` : '✓'}
+                      </span>
+                    </div>
+                    <div style={{ height: '6px', background: 'var(--bg-elevated)', borderRadius: '10px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${fileSizePct}%`, background: fileOverLimit ? 'var(--danger-text)' : 'var(--success-text)', borderRadius: '10px', transition: 'width 0.3s ease' }} />
+                    </div>
+                    {fileOverLimit && (
+                      <div style={{ marginTop: '4px', fontSize: '11px', color: 'var(--danger-text)', fontWeight: '600' }}>
+                        El archivo excede el límite de {MAX_FILE_MB}MB
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            ) : (
+              <input value={formMaterial.url} onChange={e => setFormMaterial({...formMaterial, url: e.target.value})} placeholder="https://..." />
+            )}
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <button type="submit" style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}>Publicar</button>
-            <button type="button" onClick={() => setMostrarFormMaterial(false)} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>Cancelar</button>
+            <button type="submit" disabled={esArchivoTipo(formMaterial.tipo) && fileOverLimit} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontWeight: '700', fontSize: '13px', cursor: (esArchivoTipo(formMaterial.tipo) && fileOverLimit) ? 'not-allowed' : 'pointer', opacity: (esArchivoTipo(formMaterial.tipo) && fileOverLimit) ? 0.5 : 1 }}>
+              Publicar
+            </button>
+            <button type="button" onClick={() => { setMostrarFormMaterial(false); setArchivoSel(null) }} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>
+              Cancelar
+            </button>
           </div>
         </form>
       </Modal>

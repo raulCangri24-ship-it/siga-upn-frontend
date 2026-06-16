@@ -182,6 +182,18 @@ function App() {
         </RutaProtegida>
       } />
 
+      <Route path="/coordinador/estudiantil" element={
+        <RutaProtegida rolRequerido={["ADMIN", "RECTOR", "COORDINADOR"]}>
+          <DashboardEstudiantil />
+        </RutaProtegida>
+      } />
+
+      <Route path="/coordinador/horarios" element={
+        <RutaProtegida rolRequerido={["ESTUDIANTE", "COORDINADOR"]}>
+          <Horarios />
+        </RutaProtegida>
+      } />
+
       <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
   )

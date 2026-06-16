@@ -54,6 +54,7 @@ function GestionUsuarios() {
   const [cargando, setCargando] = useState(false)
   const [csvResultados, setCsvResultados] = useState([])
   const [mostrarCsv, setMostrarCsv] = useState(false)
+  const [modalError, setModalError] = useState(null)
 
   useEffect(() => { cargar() }, [])
 
@@ -75,8 +76,18 @@ function GestionUsuarios() {
       (filtroRol === 'TODOS' || u.rol === filtroRol)
   })
 
+  const abrirNuevoUsuario = () => {
+    const nums = usuarios.map(u => parseInt(u.idUsuario?.replace('USR', '')) || 0).filter(n => n > 0)
+    const nextNum = nums.length > 0 ? Math.max(...nums) + 1 : 1
+    const nuevoId = `USR${String(nextNum).padStart(3, '0')}`
+    setForm({ ...FORM_INICIAL, idUsuario: nuevoId })
+    setModoEditar(false)
+    setModalError(null)
+    setMostrarForm(true)
+  }
+
   const handleGuardar = async (e) => {
-    e.preventDefault(); setCargando(true)
+    e.preventDefault(); setCargando(true); setModalError(null)
     try {
       if (modoEditar) {
         await editarUsuario(form.idUsuario, form)
@@ -87,7 +98,7 @@ function GestionUsuarios() {
       }
       setMostrarForm(false); setForm(FORM_INICIAL); cargar()
     } catch (err) {
-      mostrarMsg(err.response?.data || 'Error al guardar usuario', 'error')
+      setModalError(err.response?.data || 'Error al guardar usuario')
     } finally { setCargando(false) }
   }
 
@@ -97,7 +108,7 @@ function GestionUsuarios() {
       correo: u.correo, contrasena: '',
       idRol: ROLES.find(r => r.nombre === u.rol)?.id || 'ROL002'
     })
-    setModoEditar(true); setMostrarForm(true)
+    setModoEditar(true); setModalError(null); setMostrarForm(true)
   }
 
   const handleCambiarEstado = async (id, estadoActual) => {
@@ -175,7 +186,7 @@ function GestionUsuarios() {
           <Upload size={13} /> Cargar CSV
           <input type="file" accept=".csv" onChange={handleCsv} hidden />
         </label>
-        {btn('Nuevo usuario', () => { setForm(FORM_INICIAL); setModoEditar(false); setMostrarForm(true) }, 'primary', Plus)}
+        {btn('Nuevo usuario', abrirNuevoUsuario, 'primary', Plus)}
       </PageHeader>
 
       {/* Filtros */}
@@ -246,10 +257,10 @@ function GestionUsuarios() {
       </div>
 
       {/* Modal Formulario */}
-      <Modal open={mostrarForm} onClose={() => setMostrarForm(false)} title={modoEditar ? 'Editar usuario' : 'Nuevo usuario'}>
+      <Modal open={mostrarForm} onClose={() => { setMostrarForm(false); setModalError(null) }} title={modoEditar ? 'Editar usuario' : 'Nuevo usuario'}>
         <form onSubmit={handleGuardar}>
           {!modoEditar && field('ID USUARIO',
-            <input value={form.idUsuario} onChange={e => setForm({...form, idUsuario: e.target.value})} placeholder="Ej: USR010" required />
+            <input value={form.idUsuario} readOnly style={{ background: 'var(--bg-elevated)', cursor: 'default', opacity: 0.8 }} />
           )}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>{field('NOMBRE', <input value={form.nombre} onChange={e => setForm({...form, nombre: e.target.value})} placeholder="Nombre" required />)}</div>
@@ -266,11 +277,16 @@ function GestionUsuarios() {
               {ROLES.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
             </select>
           )}
+          {modalError && (
+            <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'var(--danger-bg)', color: 'var(--danger-text)', fontSize: '12px', fontWeight: '600', marginBottom: '14px', border: '1px solid rgba(239,68,68,0.2)' }}>
+              {modalError}
+            </div>
+          )}
           <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
             <button type="submit" disabled={cargando} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--accent-blue)', color: '#fff', border: 'none', fontWeight: '700', fontSize: '13px', cursor: cargando ? 'not-allowed' : 'pointer', opacity: cargando ? 0.7 : 1 }}>
               {cargando ? 'Guardando...' : (modoEditar ? 'Actualizar' : 'Registrar')}
             </button>
-            <button type="button" onClick={() => setMostrarForm(false)} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)', fontWeight: '600', fontSize: '13px' }}>
+            <button type="button" onClick={() => { setMostrarForm(false); setModalError(null) }} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)', fontWeight: '600', fontSize: '13px' }}>
               Cancelar
             </button>
           </div>
