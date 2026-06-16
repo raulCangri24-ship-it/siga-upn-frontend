@@ -38,7 +38,34 @@ function GestionDeudas() {
   const [syncCargando, setSyncCargando] = useState(false)
   const [modalError, setModalError] = useState(null)
 
-  useEffect(() => { cargar(); cargarEstudiantes() }, [])
+      useEffect(() => { 
+      cargar()
+      cargarEstudiantes()
+    }, [])
+
+// Cargar estados de restricción cuando las deudas cambian
+  useEffect(() => {
+    if (deudas.length === 0) return
+    const cargarEstadosRestriccion = async () => {
+      const ids = [...new Set(
+        deudas
+          .filter(d => d.estado === 'PENDIENTE' || d.estado === 'VENCIDA')
+          .map(d => d.idEstudiante)
+      )]
+      if (!ids.length) return
+      const resultados = await Promise.allSettled(
+        ids.map(id => obtenerEstadoEstudiante(id))
+      )
+      const estados = {}
+      resultados.forEach((r, i) => {
+        if (r.status === 'fulfilled') {
+          estados[ids[i]] = r.value?.data?.tieneRestriccion === true
+        }
+      })
+      setSyncEstados(estados)
+    }
+    cargarEstadosRestriccion()
+  }, [deudas])
 
   const cargar = async () => {
     try { const res = await listarDeudas(); setDeudas(res.data) }
