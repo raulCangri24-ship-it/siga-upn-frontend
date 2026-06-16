@@ -72,6 +72,10 @@ function SidebarEstudiante() {
       try {
         const res = await listarNotificaciones(idUsuario)
         setNotifs(res.data || [])
+        if (noLeidas > 0) {
+          marcarTodasLeidas(idUsuario).catch(() => {})
+          setNoLeidas(0)
+        }
       } catch { setNotifs([]) }
     }
     setDropOpen(p => !p)

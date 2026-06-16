@@ -1,8 +1,30 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle, XCircle, X } from 'lucide-react'
+import { CheckCircle, XCircle, AlertTriangle, X } from 'lucide-react'
+
+const VARIANT_STYLES = {
+  success: {
+    bg: 'var(--success-bg)',
+    border: 'rgba(16,185,129,0.2)',
+    color: 'var(--success-text)',
+    Icon: CheckCircle,
+  },
+  error: {
+    bg: 'var(--danger-bg)',
+    border: 'rgba(239,68,68,0.2)',
+    color: 'var(--danger-text)',
+    Icon: XCircle,
+  },
+  warning: {
+    bg: '#fef3c7',
+    border: 'rgba(146,64,14,0.2)',
+    color: '#92400e',
+    Icon: AlertTriangle,
+  },
+}
 
 function Alert({ message, variant = 'success', onClose }) {
-  const isError = variant === 'error'
+  const s = VARIANT_STYLES[variant] || VARIANT_STYLES.success
+  const { Icon } = s
   return (
     <AnimatePresence>
       {message && (
@@ -14,15 +36,13 @@ function Alert({ message, variant = 'success', onClose }) {
           style={{
             display: 'flex', alignItems: 'center', gap: '10px',
             padding: '12px 16px', borderRadius: '10px', marginBottom: '20px',
-            background: isError ? 'var(--danger-bg)' : 'var(--success-bg)',
-            border: `1px solid ${isError ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)'}`,
-            color: isError ? 'var(--danger-text)' : 'var(--success-text)',
+            background: s.bg,
+            border: `1px solid ${s.border}`,
+            color: s.color,
             fontSize: '13px', fontWeight: '500',
           }}
         >
-          {isError
-            ? <XCircle size={16} style={{ flexShrink: 0 }} />
-            : <CheckCircle size={16} style={{ flexShrink: 0 }} />}
+          <Icon size={16} style={{ flexShrink: 0 }} />
           <span style={{ flex: 1 }}>{message}</span>
           {onClose && (
             <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', opacity: 0.6, display: 'flex' }}>

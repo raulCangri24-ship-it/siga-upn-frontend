@@ -212,22 +212,12 @@ function GestionDeudas() {
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   >
                     <td style={{ padding: '12px 16px', fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{d.idDeuda}</td>
-                    <td style={{ padding: '12px 16px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                      <div>{d.idEstudiante}</div>
-                      {bloqueado && (
-                        <div style={{ fontSize: '10px', color: 'var(--danger-text)', fontWeight: '700', marginTop: '2px' }}>🔒 BLOQUEADO</div>
-                      )}
-                    </td>
+                    <td style={{ padding: '12px 16px', fontSize: '12px', color: 'var(--text-secondary)' }}>{d.idEstudiante}</td>
                     <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-primary)', maxWidth: '200px' }}>{d.concepto}</td>
                     <td style={{ padding: '12px 16px', fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>S/ {parseFloat(d.monto).toFixed(2)}</td>
                     <td style={{ padding: '12px 16px', fontSize: '12px', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>{formatFecha(d.fechaVencimiento)}</td>
                     <td style={{ padding: '12px 16px' }}>
                       <span style={{ padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', background: badge.bg, color: badge.color }}>{d.estado}</span>
-                      {d.estado !== 'VENCIDA' && syncEstados[d.idEstudiante] !== undefined && (
-                        <div style={{ fontSize: '10px', marginTop: '3px', color: syncEstados[d.idEstudiante] ? 'var(--success-text)' : 'var(--warning-text)' }}>
-                          {syncEstados[d.idEstudiante] ? '✓ Restringido' : '⚠ Sin restricción'}
-                        </div>
-                      )}
                     </td>
                     <td style={{ padding: '12px 16px' }}>
                       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
@@ -238,7 +228,7 @@ function GestionDeudas() {
                         )}
                         {(d.estado === 'PENDIENTE' || d.estado === 'VENCIDA') && (
                           bloqueado ? (
-                            <button onClick={() => handleDesbloquear(d)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '7px', background: 'var(--warning-bg)', color: 'var(--warning-text)', border: '1px solid rgba(245,158,11,0.2)', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                            <button onClick={() => handleDesbloquear(d)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '7px', background: 'var(--success-bg)', color: 'var(--success-text)', border: '1px solid rgba(16,185,129,0.2)', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
                               <Unlock size={12} /> Desbloquear
                             </button>
                           ) : (
